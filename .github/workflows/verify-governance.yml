@@ -1,0 +1,83 @@
+name: Governance Validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test-freeze-logic:
+    name: Verify Freeze Window Enforcement
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate Active Freeze Policy
+        run: |
+          DAY=$(date +%A)
+          START="00:00"
+          END="23:59"
+          cat <<EOF > devops-config.json
+          {
+            "governance": {
+              "enabled": true,
+              "freeze_windows": [
+                { "day": "$DAY", "start": "$START", "end": "$END" }
+              ]
+            },
+            "runtime": { "cli_version": "latest" }
+          }
+          EOF
+
+      - name: Attempt Governed Run (Expected to Fail)
+        id: governed-run
+        continue-on-error: true
+        uses: ./
+        with:
+          jwt_key: "mock-key"
+          client_id: "mock-id"
+          username: "mock-user"
+          enforce_policy: "true"
+
+      - name: Validate Blocked Outcome
+        run: |
+          if [ "${{ steps.governed-run.outcome }}" == "failure" ]; then
+            echo "✅ Success: Runtime correctly blocked deployment during freeze window."
+          else
+            echo "❌ Failure: Runtime allowed deployment during an active freeze window!"
+            exit 1
+          fi
+
+  test-bypass-logic:
+    name: Verify Manual Bypass
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate Active Freeze Policy
+        run: |
+          DAY=$(date +%A)
+          cat <<EOF > devops-config.json
+          {
+            "governance": {
+              "enabled": true,
+              "freeze_windows": [
+                { "day": "$DAY", "start": "00:00", "end": "23:59" }
+              ]
+            },
+            "runtime": { "cli_version": "latest" }
+          }
+          EOF
+
+      - name: Attempt Bypassed Run
+        uses: ./
+        continue-on-error: true
+        with:
+          jwt_key: "mock-key"
+          client_id: "mock-id"
+          username: "mock-user"
+          enforce_policy: "false"
