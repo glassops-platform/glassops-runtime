@@ -49,8 +49,12 @@ export class ProtocolPolicy {
         if (!config.governance.freeze_windows) return;
         
         const now = new Date();
-        const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
-        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        
+        // Use UTC to ensure deterministic behavior across runners
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const currentDay = days[now.getUTCDay()]; 
+        
+        const currentTime = `${String(now.getUTCHours()).padStart(2, '0')}:${String(now.getUTCMinutes()).padStart(2, '0')}`;
 
         for (const window of config.governance.freeze_windows) {
             if (window.day === currentDay && currentTime >= window.start && currentTime <= window.end) {

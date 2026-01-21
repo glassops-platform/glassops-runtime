@@ -25997,18 +25997,21 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(7484));
 const policy_1 = __nccwpck_require__(3418);
-const contract_1 = __nccwpck_require__(1282); // Named import
+const contract_1 = __nccwpck_require__(1282);
 const cli_1 = __nccwpck_require__(6092);
 const identity_1 = __nccwpck_require__(4430);
 async function run() {
     try {
+        // 1. Policy Phase
         const policyEngine = new policy_1.ProtocolPolicy();
         const config = await policyEngine.load();
         if (core.getInput('enforce_policy') === 'true') {
             policyEngine.checkFreeze(config);
         }
+        // 2. Bootstrap Phase
         const runtime = new cli_1.RuntimeEnvironment();
         await runtime.install(config.runtime.cli_version);
+        // 3. Identity Phase
         const identity = new identity_1.IdentityResolver();
         const orgId = await identity.authenticate({
             clientId: core.getInput('client_id'),
@@ -26016,13 +26019,19 @@ async function run() {
             username: core.getInput('username'),
             instanceUrl: core.getInput('instance_url')
         });
+        // 4. Contract Validation Phase
         core.info('📄 Validating Session Contract...');
-        const sessionContract = contract_1.DeploymentContractSchema.shape.audit.parse({
-            triggeredBy: process.env.GITHUB_ACTOR || 'unknown',
-            orgId: orgId,
-            repository: process.env.GITHUB_REPOSITORY || 'unknown',
-            commit: process.env.GITHUB_SHA || 'unknown'
+        const auditSchema = contract_1.DeploymentContractSchema.pick({ audit: true });
+        const validationResult = auditSchema.parse({
+            audit: {
+                triggeredBy: process.env.GITHUB_ACTOR || 'unknown',
+                orgId: orgId,
+                repository: process.env.GITHUB_REPOSITORY || 'unknown',
+                commit: process.env.GITHUB_SHA || 'unknown'
+            }
         });
+        const sessionContract = validationResult.audit;
+        // 5. Output Session State
         core.setOutput('org_id', sessionContract.orgId);
         core.setOutput('glassops_ready', 'true');
         core.info('✅ GlassOps Runtime is ready for governed execution.');
