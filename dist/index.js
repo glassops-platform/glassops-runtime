@@ -25989,16 +25989,23 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(7484));
+const zod_1 = __nccwpck_require__(924);
 const policy_1 = __nccwpck_require__(3418);
 const cli_1 = __nccwpck_require__(6092);
 const identity_1 = __nccwpck_require__(4430);
+// Define audit schema inline to avoid ncc bundling issues
+const AuditSchema = zod_1.z.object({
+    triggeredBy: zod_1.z.string(),
+    orgId: zod_1.z.string(),
+    repository: zod_1.z.string(),
+    commit: zod_1.z.string(),
+});
 async function run() {
     try {
         // 1. Policy Phase
         const policyEngine = new policy_1.ProtocolPolicy();
         const config = await policyEngine.load();
-        // Enforce Freeze *before* installing anything
-        if (core.getInput('enforce_policy') === 'true') {
+        if (core.getInput("enforce_policy") === "true") {
             policyEngine.checkFreeze(config);
         }
         // 2. Bootstrap Phase
@@ -26007,14 +26014,23 @@ async function run() {
         // 3. Identity Phase
         const identity = new identity_1.IdentityResolver();
         const orgId = await identity.authenticate({
-            clientId: core.getInput('client_id'),
-            jwtKey: core.getInput('jwt_key'),
-            username: core.getInput('username'),
-            instanceUrl: core.getInput('instance_url')
+            clientId: core.getInput("client_id"),
+            jwtKey: core.getInput("jwt_key"),
+            username: core.getInput("username"),
+            instanceUrl: core.getInput("instance_url"),
         });
-        // 4. Output Session State
-        core.setOutput('org_id', orgId);
-        core.setOutput('glassops_ready', 'true');
+        // 4. Contract Validation Phase
+        core.info("📄 Validating Session Contract...");
+        const sessionContract = AuditSchema.parse({
+            triggeredBy: process.env.GITHUB_ACTOR || "unknown",
+            orgId: orgId,
+            repository: process.env.GITHUB_REPOSITORY || "unknown",
+            commit: process.env.GITHUB_SHA || "unknown",
+        });
+        // 5. Output Session State
+        core.setOutput("org_id", sessionContract.orgId);
+        core.setOutput("glassops_ready", "true");
+        core.info("✅ GlassOps Runtime is ready for governed execution.");
     }
     catch (error) {
         if (error instanceof Error)
