@@ -25643,13 +25643,6 @@ module.exports = {
 
 /***/ }),
 
-/***/ 1282:
-/***/ (() => {
-
-
-
-/***/ }),
-
 /***/ 3418:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -25996,10 +25989,17 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(7484));
+const zod_1 = __nccwpck_require__(924);
 const policy_1 = __nccwpck_require__(3418);
-const contract_1 = __nccwpck_require__(1282);
 const cli_1 = __nccwpck_require__(6092);
 const identity_1 = __nccwpck_require__(4430);
+// Define audit schema inline to avoid ncc bundling issues
+const AuditSchema = zod_1.z.object({
+    triggeredBy: zod_1.z.string(),
+    orgId: zod_1.z.string(),
+    repository: zod_1.z.string(),
+    commit: zod_1.z.string()
+});
 async function run() {
     try {
         // 1. Policy Phase
@@ -26021,16 +26021,12 @@ async function run() {
         });
         // 4. Contract Validation Phase
         core.info('📄 Validating Session Contract...');
-        const auditSchema = contract_1.DeploymentContractSchema.pick({ audit: true });
-        const validationResult = auditSchema.parse({
-            audit: {
-                triggeredBy: process.env.GITHUB_ACTOR || 'unknown',
-                orgId: orgId,
-                repository: process.env.GITHUB_REPOSITORY || 'unknown',
-                commit: process.env.GITHUB_SHA || 'unknown'
-            }
+        const sessionContract = AuditSchema.parse({
+            triggeredBy: process.env.GITHUB_ACTOR || 'unknown',
+            orgId: orgId,
+            repository: process.env.GITHUB_REPOSITORY || 'unknown',
+            commit: process.env.GITHUB_SHA || 'unknown'
         });
-        const sessionContract = validationResult.audit;
         // 5. Output Session State
         core.setOutput('org_id', sessionContract.orgId);
         core.setOutput('glassops_ready', 'true');

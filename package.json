@@ -9,7 +9,7 @@
   "scripts": {
     "build": "ncc build src/index.ts -o dist --source-map --license LICENSE",
     "format": "prettier --write 'src/**/*.ts' 'config/**/*.js'",
-    "lint": "eslint src/**/*.ts",
+    "lint": "eslint -c config/eslint.config.json src/**/*.ts",
     "test": "jest --config config/jest.config.js",
     "all": "npm run format && npm run lint && npm run test && npm run build"
   },
@@ -34,7 +34,10 @@
   "devDependencies": {
     "@types/jest": "^29.5.11",
     "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "@vercel/ncc": "^0.38.1",
+    "eslint": "^8.56.0",
     "jest": "^29.7.0",
     "prettier": "^3.1.0",
     "ts-jest": "^29.1.1",

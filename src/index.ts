@@ -1,8 +1,16 @@
 import * as core from '@actions/core';
+import { z } from 'zod';
 import { ProtocolPolicy } from './protocol/policy';
-import { DeploymentContractSchema } from './protocol/contract'; 
 import { RuntimeEnvironment } from './services/cli';
 import { IdentityResolver } from './services/identity';
+
+// Define audit schema inline to avoid ncc bundling issues
+const AuditSchema = z.object({
+    triggeredBy: z.string(),
+    orgId: z.string(),
+    repository: z.string(),
+    commit: z.string()
+});
 
 async function run(): Promise<void> {
     try {
@@ -30,18 +38,12 @@ async function run(): Promise<void> {
         // 4. Contract Validation Phase
         core.info('📄 Validating Session Contract...');
         
-        const auditSchema = DeploymentContractSchema.pick({ audit: true });
-
-        const validationResult = auditSchema.parse({
-            audit: {
-                triggeredBy: process.env.GITHUB_ACTOR || 'unknown',
-                orgId: orgId,
-                repository: process.env.GITHUB_REPOSITORY || 'unknown',
-                commit: process.env.GITHUB_SHA || 'unknown'
-            }
+        const sessionContract = AuditSchema.parse({
+            triggeredBy: process.env.GITHUB_ACTOR || 'unknown',
+            orgId: orgId,
+            repository: process.env.GITHUB_REPOSITORY || 'unknown',
+            commit: process.env.GITHUB_SHA || 'unknown'
         });
-
-        const sessionContract = validationResult.audit;
 
         // 5. Output Session State
         core.setOutput('org_id', sessionContract.orgId);
