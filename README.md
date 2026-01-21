@@ -60,21 +60,30 @@ GlassOps Runtime looks for a `devops-config.json` file in your repository root t
 }
 ```
 
+### Technical Specifications
+
+| Requirement         | Specification                          |
+| :------------------ | :------------------------------------- |
+| **Node.js**         | v20+ (managed via `node_version`)      |
+| **Salesforce CLI**  | `sf` (v2.x)                            |
+| **Auth Method**     | JWT-OAuth 2.0 (Strict Identity)        |
+| **Protocol Schema** | Zod-validated Deployment Contract v1.0 |
+
 ## 🏗️ Architecture
 
-GlassOps Runtime executes in **5 Strictly Defined Phases**:
+GlassOps Runtime executes in **6 Strictly Defined Phases**:
 
-Phase 0: **Cache Retrieval**: Restores the Salesforce CLI environment from the Protocol-Linked Cache if it matches the current `devops-config.json` hash.
+Phase 0: **Cache Retrieval**: Restores the environment from the Protocol-Linked Cache to minimize bootstrap latency.
 
-Phase 1: **Policy Phase**: Evaluates governance windows using a UTC-deterministic engine to prevent localized drift.
+Phase 1: **Policy Phase**: Evaluates governance windows using a UTC-deterministic engine to ensure global policy consistency.
 
-Phase 2: **Bootstrap Phase**: Installs or verifies the `@salesforce/cli` version defined in your governance policy.
+Phase 2: **Bootstrap Phase**: Installs the CLI version explicitly defined in your governance policy to prevent version drift.
 
 Phase 3: **Identity Phase**: Securely authenticates the session and resolves the Identity Contract.
 
 Phase 4: **Contract Validation**: Normalizes session metadata into the machine-readable Deployment Contract v1.0.
 
-Phase 5: **Output Signal**: Emits the `glassops_ready` primitive to authorize downstream adapters.
+Phase 5: **Output Signal**: Emits the `glassops_ready` primitive to authorize downstream execution.
 
 ## 🤝 Contributing
 
