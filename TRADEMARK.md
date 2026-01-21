@@ -2,7 +2,7 @@
 
 **GlassOps** is a trademark of Ryan Bumstead.
 
-This software is licensed under the MIT License. The MIT License does not grant permission to use the trade names, trademarks, service marks, or product names of the project.
+This software is licensed under the Apache License 2.0. The Apache License does not grant permission to use the trade names, trademarks, service marks, or product names of the project.
 
 ## Permitted Uses
 
