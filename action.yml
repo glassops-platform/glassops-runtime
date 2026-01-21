@@ -1,0 +1,34 @@
+name: "GlassOps Runtime"
+description: "Bootstraps a governed Salesforce execution environment adhering to the GlassOps Protocol."
+author: "Ryan Bumstead"
+branding:
+  icon: "shield"
+  color: "blue"
+
+inputs:
+  jwt_key:
+    description: "Private Key for JWT flow"
+    required: true
+  client_id:
+    description: "Connected App Consumer Key"
+    required: true
+  username:
+    description: "Target Org Username"
+    required: true
+
+  enforce_policy:
+    description: "If true, scans devops-config.json before allowing CLI use"
+    default: "true"
+    required: false
+
+outputs:
+  runtime_id:
+    description: "Unique ID for this execution session"
+  org_id:
+    description: "Authenticated Org ID"
+  is_locked:
+    description: "True if the environment is currently frozen by policy"
+
+runs:
+  using: "node20"
+  main: "dist/index.js"
