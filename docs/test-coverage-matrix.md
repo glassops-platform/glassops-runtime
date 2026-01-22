@@ -67,6 +67,15 @@ This document maps Requirements Traceability Matrix (RTM) test cases to their ac
 | TC-006-N01  | Adapter writes malformed JSON                | `contract.test.ts` | ✅     |
 | TC-006-N02  | Required field missing from contract         | `contract.test.ts` | ✅     |
 
+### BR-003: Static Analysis Invariants (Code Analyzer)
+
+| RTM Test ID | Description                             | Test File                      | Status |
+| ----------- | --------------------------------------- | ------------------------------ | ------ |
+| TC-003-P03  | PMD scanner reports clean code          | `analyzer.integration.test.ts` | ✅     |
+| TC-003-P01  | Code has 1 trigger per object (Ruleset) | `analyzer.test.ts`             | ✅     |
+| TC-003-N04  | Scanner executable not found            | `analyzer.test.ts`             | ✅     |
+| TC-003-N05  | Validation failure blocks execution     | `cli.integration.test.ts`      | ✅     |
+
 ---
 
 ## E2E Workflow Coverage

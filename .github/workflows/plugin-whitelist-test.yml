@@ -198,6 +198,7 @@ jobs:
           skip_auth: "true"
 
   test-scanner-blocked:
+    # RTM: TC-003-N06
     name: Verify Scanner Block (Opinionated)
     runs-on: ubuntu-latest
     steps:

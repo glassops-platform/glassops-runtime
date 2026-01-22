@@ -45,6 +45,7 @@ _Description: Enforce architectural hard limits before deployment simulation_
 | TC-003-N03 | RunAllTests attempted in production      | Negative | Deployment blocked                             | [architecture.md §1.5](architecture.md#section-1-5)                                               |
 | TC-003-N04 | Scanner executable not found             | Negative | Graceful failure with install instructions     | [troubleshooting.md](troubleshooting.md)                                                          |
 | TC-003-N05 | AI-generated code violates trigger limit | Negative | Block with "AI hallucination detected" message | [executive-summary.md §AI](executive-summary.md#ai)                                               |
+| TC-003-N06 | Attempt to install sf scanner            | Negative | Installation blocked, opinionated policy       | [architecture.md §1.5](architecture.md#section-1-5)                                               |
 
 ## 3. Deployment Simulation & Validation
 
@@ -498,7 +499,7 @@ _Description: Maintain acceptable deployment speed while enforcing governance_
 | Category                 | Total Cases | Positive | Negative |
 | ------------------------ | ----------- | -------- | -------- |
 | Policy Resolution        | 11          | 6        | 5        |
-| Architectural Validation | 8           | 3        | 5        |
+| Architectural Validation | 9           | 3        | 6        |
 | Deployment Simulation    | 8           | 4        | 4        |
 | Contract Generation      | 7           | 3        | 4        |
 | Governance Gate          | 7           | 2        | 5        |
