@@ -21,7 +21,7 @@ export class RuntimeEnvironment {
       await exec.exec("npm", ["install", "-g", `@salesforce/cli@${version}`]);
 
       await exec.exec("sf", ["version"]);
-    } catch (err) {
+    } catch {
       throw new Error(
         "❌ Failed to bootstrap runtime. NPM registry might be down.",
       );
