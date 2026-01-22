@@ -113,7 +113,7 @@ describe("ProtocolPolicy", () => {
         governance: {
           enabled: true,
           plugin_whitelist: [
-            "sfdx-hardis@^4.0.0",
+            "sfdx-hardis@^6.0.0",
             "@salesforce/plugin-deploy-retrieve@latest",
           ],
         },
@@ -188,7 +188,7 @@ describe("ProtocolPolicy", () => {
         governance: {
           enabled: true,
           plugin_whitelist: [
-            "sfdx-hardis@^4.0.0",
+            "sfdx-hardis@^6.0.0",
             "@salesforce/plugin-deploy-retrieve@latest",
           ],
         },
@@ -199,7 +199,7 @@ describe("ProtocolPolicy", () => {
         configWithVersionConstraint as ProtocolConfig,
         "sfdx-hardis",
       );
-      expect(result).toBe("^4.0.0");
+      expect(result).toBe("^6.0.0");
     });
 
     it("should return null when plugin has no version constraint", () => {

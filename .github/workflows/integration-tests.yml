@@ -125,7 +125,7 @@ jobs:
             "governance": {
               "enabled": true,
               "plugin_whitelist": [
-                "sfdx-hardis@^4.0.0",
+                "sfdx-hardis@^6.0.0",
                 "@salesforce/plugin-deploy-retrieve@latest"
               ]
             },

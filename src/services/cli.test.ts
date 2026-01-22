@@ -314,7 +314,7 @@ describe("RuntimeEnvironment", () => {
       const configWithVersionConstraint: ProtocolConfig = {
         governance: {
           enabled: true,
-          plugin_whitelist: ["sfdx-hardis@^4.0.0"],
+          plugin_whitelist: ["sfdx-hardis@^6.0.0"],
         },
         runtime: {
           cli_version: "latest",
@@ -336,7 +336,7 @@ describe("RuntimeEnvironment", () => {
       expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
         expectedFlag,
         expect.stringContaining(
-          `${expectedEchoPrefix}sf "plugins" "install" "sfdx-hardis@^4.0.0"`,
+          `${expectedEchoPrefix}sf "plugins" "install" "sfdx-hardis@^6.0.0"`,
         ),
       ]);
       expect(mockedInfo).toHaveBeenCalledWith(

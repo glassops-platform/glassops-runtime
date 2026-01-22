@@ -37,7 +37,7 @@ jobs:
           {
             "governance": {
               "enabled": true,
-              "plugin_whitelist": ["sfdx-hardis@^4.0.0", "@salesforce/plugin-deploy-retrieve"]
+              "plugin_whitelist": ["sfdx-hardis@^6.0.0", "@salesforce/plugin-deploy-retrieve"]
             },
             "runtime": {
               "cli_version": "latest"
@@ -173,7 +173,7 @@ jobs:
           {
             "governance": {
               "enabled": true,
-              "plugin_whitelist": ["sfdx-hardis@^4.0.0", "@salesforce/plugin-deploy-retrieve@latest"]
+              "plugin_whitelist": ["sfdx-hardis@^6.0.0", "@salesforce/plugin-deploy-retrieve@latest"]
             },
             "runtime": {
               "cli_version": "latest"

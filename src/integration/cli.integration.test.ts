@@ -128,7 +128,7 @@ describe("CLI Integration Tests", () => {
       const config: ProtocolConfig = {
         governance: {
           enabled: true,
-          plugin_whitelist: ["sfdx-hardis@^4.0.0"],
+          plugin_whitelist: ["sfdx-hardis@^6.0.0"],
         },
         runtime: { cli_version: "latest", node_version: "20" },
       };
@@ -144,11 +144,11 @@ describe("CLI Integration Tests", () => {
       expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
         expectedFlag,
         expect.stringContaining(
-          `${expectedEchoPrefix}sf "plugins" "install" "sfdx-hardis@^4.0.0"`,
+          `${expectedEchoPrefix}sf "plugins" "install" "sfdx-hardis@^6.0.0"`,
         ),
       ]);
       expect(mockedInfo).toHaveBeenCalledWith(
-        "⬇️ Installing plugin: sfdx-hardis@^4.0.0",
+        "⬇️ Installing plugin: sfdx-hardis@^6.0.0",
       );
     });
 
@@ -206,7 +206,7 @@ describe("CLI Integration Tests", () => {
       const config: ProtocolConfig = {
         governance: {
           enabled: true,
-          plugin_whitelist: ["sfdx-hardis@^4.0.0"],
+          plugin_whitelist: ["sfdx-hardis@^6.0.0"],
         },
         runtime: { cli_version: "latest", node_version: "20" },
       };
@@ -227,7 +227,7 @@ describe("CLI Integration Tests", () => {
         governance: {
           enabled: true,
           plugin_whitelist: [
-            "sfdx-hardis@^4.0.0",
+            "sfdx-hardis@^6.0.0",
             "@salesforce/plugin-deploy-retrieve@latest",
           ],
         },
@@ -247,7 +247,7 @@ describe("CLI Integration Tests", () => {
       expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
         expectedFlag,
         expect.stringContaining(
-          `${expectedEchoPrefix}sf "plugins" "install" "sfdx-hardis@^4.0.0"`,
+          `${expectedEchoPrefix}sf "plugins" "install" "sfdx-hardis@^6.0.0"`,
         ),
       ]);
       expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
@@ -346,7 +346,7 @@ describe("CLI Integration Tests", () => {
       const config: ProtocolConfig = {
         governance: {
           enabled: true,
-          plugin_whitelist: ["sfdx-hardis@^4.0.0"],
+          plugin_whitelist: ["sfdx-hardis@^6.0.0"],
         },
         runtime: { cli_version: "latest", node_version: "20" },
       };
@@ -361,7 +361,7 @@ describe("CLI Integration Tests", () => {
         "🔍 Validating plugin: sfdx-hardis",
       );
       expect(mockedInfo).toHaveBeenCalledWith(
-        "⬇️ Installing plugin: sfdx-hardis@^4.0.0",
+        "⬇️ Installing plugin: sfdx-hardis@^6.0.0",
       );
       const expectedShell = process.platform === "win32" ? "cmd" : "sh";
       const expectedFlag = process.platform === "win32" ? "/c" : "-c";
@@ -371,7 +371,7 @@ describe("CLI Integration Tests", () => {
       expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
         expectedFlag,
         expect.stringContaining(
-          `${expectedEchoPrefix}sf "plugins" "install" "sfdx-hardis@^4.0.0"`,
+          `${expectedEchoPrefix}sf "plugins" "install" "sfdx-hardis@^6.0.0"`,
         ),
       ]);
       expect(mockedGetExecOutput).toHaveBeenCalledWith("sf", [
