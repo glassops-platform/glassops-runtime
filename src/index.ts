@@ -189,22 +189,30 @@ async function run(): Promise<void> {
 
       // BR-003: Static Analysis Invariants
       if (config.governance.analyzer?.enabled) {
-          log.info("Running static code analysis...", "Analyzer");
-          const analyzer = new Analyzer();
-          
-          // Opinionated Check: Ensure we aren't using deprecated tools
-          if (config.governance.analyzer.opinionated) {
-              await analyzer.ensureCompatibility(); 
-          }
+        log.info("Running static code analysis...", "Analyzer");
+        const analyzer = new Analyzer();
 
-          const scanResults = await analyzer.scan(["."], config.governance.analyzer.rulesets?.[0]);
-          
-          const criticalViolations = scanResults.violations.filter(v => v.severity <= (config.governance.analyzer?.severity_threshold || 1));
-          
-          if (criticalViolations.length > 0) {
-               throw new PolicyError(`Static analysis failed: ${criticalViolations.length} critical violations found.`);
-          }
-          log.info("✅ Static analysis passed", "Analyzer");
+        // Opinionated Check: Ensure we aren't using deprecated tools
+        if (config.governance.analyzer.opinionated) {
+          await analyzer.ensureCompatibility();
+        }
+
+        const scanResults = await analyzer.scan(
+          ["."],
+          config.governance.analyzer.rulesets?.[0],
+        );
+
+        const criticalViolations = scanResults.violations.filter(
+          (v) =>
+            v.severity <= (config.governance.analyzer?.severity_threshold || 1),
+        );
+
+        if (criticalViolations.length > 0) {
+          throw new PolicyError(
+            `Static analysis failed: ${criticalViolations.length} critical violations found.`,
+          );
+        }
+        log.info("✅ Static analysis passed", "Analyzer");
       }
 
       if (core.getInput("enforce_policy") === "true") {

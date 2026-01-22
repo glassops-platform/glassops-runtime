@@ -42104,7 +42104,7 @@ async function run() {
                     await analyzer.ensureCompatibility();
                 }
                 const scanResults = await analyzer.scan(["."], config.governance.analyzer.rulesets?.[0]);
-                const criticalViolations = scanResults.violations.filter(v => v.severity <= (config.governance.analyzer?.severity_threshold || 1));
+                const criticalViolations = scanResults.violations.filter((v) => v.severity <= (config.governance.analyzer?.severity_threshold || 1));
                 if (criticalViolations.length > 0) {
                     throw new PolicyError(`Static analysis failed: ${criticalViolations.length} critical violations found.`);
                 }
@@ -42537,7 +42537,13 @@ class Analyzer {
      */
     async scan(paths, ruleset) {
         await this.ensureCompatibility();
-        const args = ["code-analyzer", "run", "--normalize-severity", "--output-format", "json"];
+        const args = [
+            "code-analyzer",
+            "run",
+            "--normalize-severity",
+            "--output-format",
+            "json",
+        ];
         // Add paths
         // sf code-analyzer run --target "src,test"
         args.push("--target", paths.join(","));
@@ -42549,11 +42555,15 @@ class Analyzer {
         try {
             const exitCode = await exec.exec("sf", args, {
                 listeners: {
-                    stdout: (data) => { stdout += data.toString(); },
-                    stderr: (data) => { stderr += data.toString(); }
+                    stdout: (data) => {
+                        stdout += data.toString();
+                    },
+                    stderr: (data) => {
+                        stderr += data.toString();
+                    },
                 },
                 silent: true,
-                ignoreReturnCode: true // Analyzer returns non-zero on violations
+                ignoreReturnCode: true, // Analyzer returns non-zero on violations
             });
             return this.parseOutput(stdout, exitCode);
         }
@@ -42597,7 +42607,7 @@ class Analyzer {
                                 description: v.message,
                                 severity: v.severity, // 1 (high) to 3 (low) roughly
                                 file: fileResult.fileName,
-                                line: v.line
+                                line: v.line,
                             });
                         }
                     }
