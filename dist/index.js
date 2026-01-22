@@ -41948,6 +41948,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.run = run;
 const cache = __importStar(__nccwpck_require__(5116));
 const core = __importStar(__nccwpck_require__(37484));
 const crypto = __importStar(__nccwpck_require__(76982));
@@ -41992,87 +41993,86 @@ class ContractError extends GlassOpsError {
     }
 }
 async function run() {
-    // LEVEL 1 PRIMITIVE: Core Governance Controls
-    // ============================================
-    // 1. Environment Context Validation
-    const requiredEnvVars = [
-        "GITHUB_WORKSPACE",
-        "GITHUB_ACTOR",
-        "GITHUB_REPOSITORY",
-    ];
-    const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
-    if (missingEnvVars.length > 0) {
-        throw new Error(`Missing required environment variables: ${missingEnvVars.join(", ")}`);
-    }
-    // 2. Input Validation & Sanitization
-    const requiredInputs = ["client_id", "jwt_key", "username"];
-    const missingInputs = requiredInputs.filter((input) => !core.getInput(input));
-    if (missingInputs.length > 0) {
-        throw new Error(`Missing required inputs: ${missingInputs.join(", ")}`);
-    }
-    // Validate JWT key format (basic check)
-    const jwtKey = core.getInput("jwt_key");
-    if (!jwtKey.includes("BEGIN") || !jwtKey.includes("END")) {
-        throw new Error("Invalid JWT key format - must contain BEGIN and END markers");
-    }
-    // Validate Salesforce instance URL
-    const instanceUrl = core.getInput("instance_url") || "https://login.salesforce.com";
     try {
-        new URL(instanceUrl);
-    }
-    catch {
-        throw new Error(`Invalid instance URL: ${instanceUrl}`);
-    }
-    // 3. Rate Limiting (Basic session tracking - reserved for future implementation)
-    // Session tracking and concurrency limits will be implemented in a future version
-    // 4. Resource Limits Validation
-    const maxExecutionTime = 30 * 60 * 1000; // 30 minutes max
-    const startTime = Date.now();
-    // Safety check for execution time
-    // Safety check for execution time
-    const safetyTimeout = setTimeout(() => {
-        if (Date.now() - startTime > maxExecutionTime) {
-            core.error("Execution timeout exceeded - terminating session");
-            process.exit(1);
+        // LEVEL 1 PRIMITIVE: Core Governance Controls
+        // ============================================
+        // 1. Environment Context Validation
+        const requiredEnvVars = [
+            "GITHUB_WORKSPACE",
+            "GITHUB_ACTOR",
+            "GITHUB_REPOSITORY",
+        ];
+        const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
+        if (missingEnvVars.length > 0) {
+            throw new Error(`Missing required environment variables: ${missingEnvVars.join(", ")}`);
         }
-    }, maxExecutionTime);
-    // Ensure the timeout doesn't prevent the process from exiting
-    safetyTimeout.unref();
-    // 5. Data Integrity & Compliance Checks
-    // Validate GitHub context for security
-    if (process.env.GITHUB_EVENT_NAME === "pull_request" &&
-        !process.env.GITHUB_HEAD_REF) {
-        throw new Error("Invalid pull request context - missing GITHUB_HEAD_REF");
-    }
-    // Basic compliance check - ensure we're not running in forked repositories without proper context
-    if (process.env.GITHUB_EVENT_NAME === "pull_request" &&
-        process.env.GITHUB_HEAD_REF?.includes(":")) {
-        core.warning("⚠️ Running on forked repository - additional security validations recommended");
-    }
-    // Validate repository format
-    const repoPattern = /^[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+$/;
-    if (!repoPattern.test(process.env.GITHUB_REPOSITORY || "")) {
-        throw new Error(`Invalid repository format: ${process.env.GITHUB_REPOSITORY}`);
-    }
-    // Generate unique runtime ID for this execution session
-    const runtimeId = crypto.randomUUID();
-    core.setOutput("runtime_id", runtimeId);
-    // Structured logging helper
-    const log = {
-        info: (message, phase) => {
-            const prefix = phase ? `[${phase}] ` : "";
-            core.info(`${prefix}${message}`);
-        },
-        warning: (message, phase) => {
-            const prefix = phase ? `[${phase}] ` : "";
-            core.warning(`${prefix}${message}`);
-        },
-        error: (message, phase) => {
-            const prefix = phase ? `[${phase}] ` : "";
-            core.error(`${prefix}${message}`);
-        },
-    };
-    try {
+        // 2. Input Validation & Sanitization
+        const requiredInputs = ["client_id", "jwt_key", "username"];
+        const missingInputs = requiredInputs.filter((input) => !core.getInput(input));
+        if (missingInputs.length > 0) {
+            throw new Error(`Missing required inputs: ${missingInputs.join(", ")}`);
+        }
+        // Validate JWT key format (basic check)
+        const jwtKey = core.getInput("jwt_key");
+        if (!jwtKey.includes("BEGIN") || !jwtKey.includes("END")) {
+            throw new Error("Invalid JWT key format - must contain BEGIN and END markers");
+        }
+        // Validate Salesforce instance URL
+        const instanceUrl = core.getInput("instance_url") || "https://login.salesforce.com";
+        try {
+            new URL(instanceUrl);
+        }
+        catch {
+            throw new Error(`Invalid instance URL: ${instanceUrl}`);
+        }
+        // 3. Rate Limiting (Basic session tracking - reserved for future implementation)
+        // Session tracking and concurrency limits will be implemented in a future version
+        // 4. Resource Limits Validation
+        const maxExecutionTime = 30 * 60 * 1000; // 30 minutes max
+        const startTime = Date.now();
+        // Safety check for execution time
+        const safetyTimeout = setTimeout(() => {
+            if (Date.now() - startTime > maxExecutionTime) {
+                core.error("Execution timeout exceeded - terminating session");
+                process.exit(1);
+            }
+        }, maxExecutionTime);
+        // Ensure the timeout doesn't prevent the process from exiting
+        safetyTimeout.unref();
+        // 5. Data Integrity & Compliance Checks
+        // Validate GitHub context for security
+        if (process.env.GITHUB_EVENT_NAME === "pull_request" &&
+            !process.env.GITHUB_HEAD_REF) {
+            throw new Error("Invalid pull request context - missing GITHUB_HEAD_REF");
+        }
+        // Basic compliance check - ensure we're not running in forked repositories without proper context
+        if (process.env.GITHUB_EVENT_NAME === "pull_request" &&
+            process.env.GITHUB_HEAD_REF?.includes(":")) {
+            core.warning("⚠️ Running on forked repository - additional security validations recommended");
+        }
+        // Validate repository format
+        const repoPattern = /^[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+$/;
+        if (!repoPattern.test(process.env.GITHUB_REPOSITORY || "")) {
+            throw new Error(`Invalid repository format: ${process.env.GITHUB_REPOSITORY}`);
+        }
+        // Generate unique runtime ID for this execution session
+        const runtimeId = crypto.randomUUID();
+        core.setOutput("runtime_id", runtimeId);
+        // Structured logging helper
+        const log = {
+            info: (message, phase) => {
+                const prefix = phase ? `[${phase}] ` : "";
+                core.info(`${prefix}${message}`);
+            },
+            warning: (message, phase) => {
+                const prefix = phase ? `[${phase}] ` : "";
+                core.warning(`${prefix}${message}`);
+            },
+            error: (message, phase) => {
+                const prefix = phase ? `[${phase}] ` : "";
+                core.error(`${prefix}${message}`);
+            },
+        };
         // 0. Cache Retrieval Phase
         core.startGroup("📦 Restoring GlassOps Runtime Cache");
         const cacheKey = `glassops-runtime-${process.platform}-${process.arch}-${process.version}`;
@@ -42224,7 +42224,10 @@ async function run() {
             core.setFailed(error.message);
     }
 }
-run();
+// Only auto-run when executed directly (not when imported for testing)
+if (require.main === require.cache[eval('__filename')] || !process.env.JEST_WORKER_ID) {
+    run();
+}
 
 
 /***/ }),
