@@ -11,7 +11,7 @@ module.exports = {
   // Coverage settings for integration tests
   collectCoverage: true,
   coverageDirectory: "../coverage/integration",
-  coverageReporters: ["text", "lcov", "html"],
+  coverageReporters: ["text", "lcov", "html", "json-summary"],
   // Collect coverage from all source files
   collectCoverageFrom: [
     "**/*.ts",

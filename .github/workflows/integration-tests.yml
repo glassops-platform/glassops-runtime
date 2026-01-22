@@ -150,6 +150,7 @@ jobs:
           username: "test@example.com"
           instance_url: "https://test.salesforce.com"
           enforce_policy: "false"
+          skip_auth: "true"
         env:
           DEBUG: ${{ inputs.debug == 'true' && 'true' || '' }}
 
