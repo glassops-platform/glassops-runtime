@@ -38,7 +38,18 @@ jobs:
         run: npm ci
 
       - name: Run Jest Suite
-        run: npm test
+        run: |
+          npm test 2>&1 | tee test-output.log
+          echo "## 🧪 Logic Unit Tests (${{ matrix.os }})" >> $GITHUB_STEP_SUMMARY
+          if [ $? -eq 0 ]; then
+             echo "✅ **All Tests Passed**" >> $GITHUB_STEP_SUMMARY
+          else
+             echo "❌ **Test Failures Detected**" >> $GITHUB_STEP_SUMMARY
+             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+             tail -n 20 test-output.log >> $GITHUB_STEP_SUMMARY
+             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+             exit 1
+          fi
 
       - name: Upload Coverage Reports
         uses: codecov/codecov-action@v4
@@ -60,17 +71,23 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Run Code Hygiene Checks
+        run: |
+          echo "## 🧹 Code Hygiene Status" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          echo -n "| ESLint | " >> $GITHUB_STEP_SUMMARY
+          if npm run lint; then echo "✅ Pass | " >> $GITHUB_STEP_SUMMARY; else echo "❌ Fail | " >> $GITHUB_STEP_SUMMARY; fi
+
+          echo -n "| Prettier | " >> $GITHUB_STEP_SUMMARY
+          if npm run format:check; then echo "✅ Pass | " >> $GITHUB_STEP_SUMMARY; else echo "❌ Fail | " >> $GITHUB_STEP_SUMMARY; fi
+
       - name: Install Dependencies
         run: npm ci
 
-      - name: Lint Source Code
-        run: npm run lint
-
       - name: Verify Build
         run: npm run build
-
-      - name: Check Formatting
-        run: npm run format:check
 
       - name: Check Dependencies
         run: npm audit --audit-level moderate

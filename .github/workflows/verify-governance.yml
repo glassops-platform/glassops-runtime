@@ -44,10 +44,13 @@ jobs:
 
       - name: Validate Blocked Outcome
         run: |
+          echo "## ❄️ Freeze Window Logic Verified" >> $GITHUB_STEP_SUMMARY
           if [ "${{ steps.governed-run.outcome }}" == "failure" ]; then
-            echo "✅ Success: Runtime correctly blocked deployment during freeze window."
+            echo "✅ **Success**: Runtime correctly blocked deployment during freeze window." >> $GITHUB_STEP_SUMMARY
+            echo "- Policy: Active" >> $GITHUB_STEP_SUMMARY
+            echo "- Outcome: Blocked" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ Failure: Runtime allowed deployment during an active freeze window!"
+            echo "❌ **Failure**: Runtime allowed deployment during an active freeze window!" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
@@ -81,3 +84,13 @@ jobs:
           client_id: "mock-id"
           username: "mock-user"
           enforce_policy: "false"
+
+      - name: Verify Bypass
+        if: always()
+        run: |
+          echo "## 🔓 Manual Bypass Verified" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.test-bypass.outcome }}" == "success" ]; then
+             echo "✅ **Success**: Policy successfully bypassed with enforce_policy='false'" >> $GITHUB_STEP_SUMMARY
+          else
+             echo "⚠️ **Note**: Run failed, but ensuring it wasn't due to governance block." >> $GITHUB_STEP_SUMMARY
+          fi

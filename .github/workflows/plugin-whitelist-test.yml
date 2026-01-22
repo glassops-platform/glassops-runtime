@@ -102,10 +102,13 @@ jobs:
 
       - name: Verify Plugin Was Rejected
         run: |
+          echo "## 🛡️ Plugin Whitelist Validation" >> $GITHUB_STEP_SUMMARY
           if [ "${{ steps.test-failure.outcome }}" == "failure" ]; then
-            echo "✅ Governance correctly rejected non-whitelisted plugin"
+            echo "✅ **Success**: Governance correctly rejected non-whitelisted plugin" >> $GITHUB_STEP_SUMMARY
+            echo "- Plugin: 'some-malicious-plugin'" >> $GITHUB_STEP_SUMMARY
+            echo "- Outcome: Blocked" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ Governance failed to reject non-whitelisted plugin"
+            echo "❌ **Failure**: Governance failed to reject non-whitelisted plugin" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
