@@ -408,7 +408,7 @@ describe("RuntimeEnvironment", () => {
         exitCode: 0,
       });
       // Force platform to linux for this test
-      (runtime as any).platform = "linux";
+      Object.defineProperty(runtime, "platform", { value: "linux" });
 
       await runtime.installPlugins(mockConfig, ["sfdx-hardis"]);
 
