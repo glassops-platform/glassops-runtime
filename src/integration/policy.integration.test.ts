@@ -3,6 +3,11 @@
  *
  * These tests verify the ProtocolPolicy class works correctly
  * with real file system operations and configuration loading.
+ *
+ * RTM Coverage:
+ * - BR-001: Additive Policy Merge (TC-001-P01 to TC-001-N04)
+ * - BR-007: Pass/Fail Adjudication - Freeze Windows (TC-007-P02, TC-007-N01)
+ * - BR-020: Plugin Whitelist Management (TC-020-P04 to TC-020-N07)
  */
 
 import * as fs from "fs";
@@ -52,7 +57,9 @@ describe("Policy Integration Tests", () => {
     }
   });
 
+  // RTM: TC-001-P01, TC-001-P02, TC-001-N04
   describe("Configuration Loading", () => {
+    // RTM: TC-001-P01 - Load and merge policy from file
     it("should load configuration from real file", async () => {
       const config = {
         governance: {
@@ -205,6 +212,32 @@ describe("Policy Integration Tests", () => {
       expect(policy.validatePluginWhitelist(config, "any-plugin")).toBe(true);
       expect(
         policy.getPluginVersionConstraint(config, "any-plugin"),
+      ).toBeNull();
+    });
+
+    it("should handle scoped packages without version constraints", async () => {
+      const config: ProtocolConfig = {
+        governance: {
+          enabled: true,
+          plugin_whitelist: ["@salesforce/plugin-deploy-retrieve"], // No version
+        },
+        runtime: { cli_version: "latest", node_version: "20" },
+      };
+
+      // Should validate the scoped package (line 162)
+      expect(
+        policy.validatePluginWhitelist(
+          config,
+          "@salesforce/plugin-deploy-retrieve",
+        ),
+      ).toBe(true);
+
+      // Should return null for version constraint (line 180)
+      expect(
+        policy.getPluginVersionConstraint(
+          config,
+          "@salesforce/plugin-deploy-retrieve",
+        ),
       ).toBeNull();
     });
   });
