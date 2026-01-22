@@ -18,6 +18,8 @@ module.exports = {
     "!**/*.test.ts",
     "!**/*.integration.test.ts",
     "!**/node_modules/**",
+    "!**/index.ts", // Entry point tested via E2E, not integration tests
+    "!**/integration/test-helpers.ts", // Test utilities, not production code
   ],
   // Setup file for integration test environment
   setupFilesAfterEnv: ["<rootDir>/../config/jest.integration.setup.js"],
