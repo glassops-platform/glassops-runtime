@@ -38,10 +38,12 @@ jobs:
         run: npm ci
 
       - name: Run Jest Suite
+        shell: bash
         run: |
           npm test 2>&1 | tee test-output.log
+          exit_code=${PIPESTATUS[0]}
           echo "## 🧪 Logic Unit Tests (${{ matrix.os }})" >> $GITHUB_STEP_SUMMARY
-          if [ $? -eq 0 ]; then
+          if [ $exit_code -eq 0 ]; then
              echo "✅ **All Tests Passed**" >> $GITHUB_STEP_SUMMARY
           else
              echo "❌ **Test Failures Detected**" >> $GITHUB_STEP_SUMMARY
@@ -71,6 +73,9 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Install Dependencies
+        run: npm ci
+
       - name: Run Code Hygiene Checks
         run: |
           echo "## 🧹 Code Hygiene Status" >> $GITHUB_STEP_SUMMARY
@@ -82,9 +87,6 @@ jobs:
 
           echo -n "| Prettier | " >> $GITHUB_STEP_SUMMARY
           if npm run format:check; then echo "✅ Pass | " >> $GITHUB_STEP_SUMMARY; else echo "❌ Fail | " >> $GITHUB_STEP_SUMMARY; fi
-
-      - name: Install Dependencies
-        run: npm ci
 
       - name: Verify Build
         run: npm run build
