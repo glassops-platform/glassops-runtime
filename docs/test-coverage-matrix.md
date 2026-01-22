@@ -103,7 +103,6 @@ The following RTM test cases are verified through GitHub Actions E2E workflows:
 
 | Business Process                 | RTM IDs                  | Notes                                |
 | -------------------------------- | ------------------------ | ------------------------------------ |
-| BR-003: Static Analysis          | TC-003-P01 to TC-003-N05 | Scanner not implemented              |
 | BR-004: Check-Only Deployment    | TC-004-P01 to TC-004-N04 | Requires real Salesforce org         |
 | BR-008: Quick Deploy             | TC-008-P01 to TC-008-N04 | Requires real Salesforce org         |
 | BR-012: Break-Glass              | TC-012-P01 to TC-012-N03 | Emergency override not implemented   |
@@ -118,10 +117,11 @@ The following RTM test cases are verified through GitHub Actions E2E workflows:
 | Category              | Total RTM Cases | Implemented | Coverage |
 | --------------------- | --------------- | ----------- | -------- |
 | Policy & Governance   | 18              | 12          | 67%      |
-| Plugin Whitelist      | 15              | 10          | 67%      |
+| Plugin Whitelist      | 15              | 11          | 73%      |
+| Static Analysis       | 5               | 4           | 80%      |
 | Authentication        | 7               | 4           | 57%      |
 | Contract Generation   | 7               | 5           | 71%      |
 | CLI/Adapter           | 7               | 5           | 71%      |
-| **Implemented Total** | **54**          | **36**      | **67%**  |
+| **Implemented Total** | **59**          | **41**      | **69%**  |
 
 > Note: Remaining 33% are future features (scanner, notifications, security scanning) not yet in scope for MVP.
