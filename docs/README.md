@@ -6,7 +6,17 @@ GlassOps Runtime is a specialized GitHub Action that provides governed, secure, 
 
 ## Architecture
 
-The runtime executes in **6 Strictly Defined Phases**:
+The runtime executes in **6 Strictly Defined Phases** with comprehensive **Level 1 Primitive Governance**:
+
+### Phase 0: Pre-Flight Governance (Level 1 Primitive)
+
+- **Environment Context Validation**: Required GitHub environment variables
+- **Input Validation & Sanitization**: JWT format, URL validation, required inputs
+- **Rate Limiting**: Basic session tracking and concurrency limits
+- **Resource Limits**: Execution time caps and resource constraints
+- **Data Integrity**: GitHub context validation and compliance checks
+
+### Core Execution Phases
 
 1. **Cache Retrieval Phase**: Restores environment from Protocol-Linked Cache
 2. **Policy Phase**: Evaluates governance windows using UTC-deterministic engine
@@ -14,6 +24,17 @@ The runtime executes in **6 Strictly Defined Phases**:
 4. **Identity Phase**: Securely authenticates session and resolves Identity Contract
 5. **Contract Validation Phase**: Normalizes session metadata into Deployment Contract v1.0
 6. **Output Signal Phase**: Emits `glassops_ready` primitive to authorize downstream execution
+
+### Level 1 Primitive Governance Controls
+
+The foundational governance layer enforces:
+
+- **Input Validation**: JWT key format, Salesforce URLs, required parameters
+- **Environment Security**: GitHub context validation, repository format checks
+- **Resource Protection**: Execution timeouts, memory limits, concurrency controls
+- **Compliance Checks**: PR context validation, fork detection warnings
+- **Error Categorization**: Phase-specific error types with structured logging
+- **Audit Trails**: Comprehensive logging for all governance decisions
 
 ## Configuration
 

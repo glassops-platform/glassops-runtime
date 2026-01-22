@@ -25,6 +25,23 @@ inputs:
     default: "true"
     required: false
 
+  test_results:
+    description: 'JSON string with test results: {"total": 100, "passed": 95, "failed": 5}'
+    required: false
+
+  coverage_percentage:
+    description: "Code coverage percentage (0-100)"
+    required: false
+
+  coverage_required:
+    description: "Required coverage percentage threshold"
+    default: "80"
+    required: false
+
+  plugins:
+    description: "Comma-separated list of Salesforce CLI plugins to install (e.g., 'sfdx-hardis,@salesforce/plugin-deploy-retrieve')"
+    required: false
+
 outputs:
   runtime_id:
     description: "Unique ID for this execution session"
