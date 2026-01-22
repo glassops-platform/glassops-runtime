@@ -16,7 +16,7 @@ on:
       debug:
         description: "Enable debug logging"
         required: false
-        default: "false"
+        default: false
         type: boolean
 
 jobs:
@@ -100,7 +100,7 @@ jobs:
   e2e-action-test:
     name: E2E Action Test
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'pull_request'
 
     steps:
       - name: Checkout Repository

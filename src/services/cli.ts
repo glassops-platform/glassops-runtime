@@ -84,11 +84,26 @@ export class RuntimeEnvironment {
 
         // Verify installation
         const result = await exec.getExecOutput("sf", ["plugins", "--json"]);
-        const installedPlugins = JSON.parse(result.stdout) as {
-          result: Array<{ name: string; version: string }>;
-        };
-        const isInstalled = installedPlugins.result.some(
-          (p) => p.name === plugin,
+        const parsed = JSON.parse(result.stdout);
+        let installedPlugins: Array<{ name: string }> | undefined;
+
+        if (Array.isArray(parsed)) {
+          installedPlugins = parsed;
+        } else if (
+          parsed &&
+          typeof parsed === "object" &&
+          "result" in parsed &&
+          Array.isArray(parsed.result)
+        ) {
+          installedPlugins = parsed.result;
+        }
+
+        if (!installedPlugins) {
+          throw new Error("Unexpected output format from 'sf plugins --json'");
+        }
+
+        const isInstalled = installedPlugins.some(
+          (p: { name: string }) => p.name === plugin,
         );
 
         if (!isInstalled) {

@@ -4,7 +4,10 @@ import * as io from "@actions/io";
 import * as core from "@actions/core";
 import { ProtocolConfig } from "../protocol/policy";
 
-jest.mock("@actions/exec");
+jest.mock("@actions/exec", () => ({
+  exec: jest.fn(),
+  getExecOutput: jest.fn(),
+}));
 jest.mock("@actions/io");
 jest.mock("@actions/core");
 
@@ -110,7 +113,6 @@ describe("RuntimeEnvironment", () => {
 
   describe("installPlugins", () => {
     beforeEach(() => {
-      jest.resetModules();
       jest.dontMock("../protocol/policy");
     });
 
@@ -125,20 +127,7 @@ describe("RuntimeEnvironment", () => {
       },
     };
 
-    beforeEach(() => {
-      // Mock getExecOutput for plugin verification
-      const mockedGetExecOutput = exec.getExecOutput as jest.Mock;
-      mockedGetExecOutput.mockResolvedValue({
-        stdout: JSON.stringify({
-          result: [
-            { name: "sfdx-hardis", version: "1.0.0" },
-            { name: "@salesforce/plugin-deploy-retrieve", version: "2.0.0" },
-          ],
-        }),
-        stderr: "",
-        exitCode: 0,
-      });
-    });
+    // Remove the beforeEach mock setup - each test will set up its own mocks
 
     it("should skip installation when no plugins specified", async () => {
       await runtime.installPlugins(mockConfig, []);
@@ -152,6 +141,14 @@ describe("RuntimeEnvironment", () => {
     it("should install whitelisted plugins successfully", async () => {
       const mockedStartGroup = core.startGroup as jest.Mock;
       const mockedEndGroup = core.endGroup as jest.Mock;
+      const mockedGetExecOutput = exec.getExecOutput as jest.Mock;
+      mockedGetExecOutput.mockResolvedValue({
+        stdout: JSON.stringify({
+          result: [{ name: "sfdx-hardis", version: "1.0.0" }],
+        }),
+        stderr: "",
+        exitCode: 0,
+      });
 
       await runtime.installPlugins(mockConfig, ["sfdx-hardis"]);
 
@@ -226,15 +223,17 @@ describe("RuntimeEnvironment", () => {
     });
 
     it("should install multiple plugins", async () => {
-      // Mock the dynamic import and policy engine
-      const mockPolicyEngine = {
-        validatePluginWhitelist: jest.fn().mockReturnValue(true),
-        getPluginVersionConstraint: jest.fn().mockReturnValue(null),
-      };
-
-      jest.doMock("../protocol/policy", () => ({
-        ProtocolPolicy: jest.fn().mockImplementation(() => mockPolicyEngine),
-      }));
+      const mockedGetExecOutput = exec.getExecOutput as jest.Mock;
+      mockedGetExecOutput.mockResolvedValue({
+        stdout: JSON.stringify({
+          result: [
+            { name: "sfdx-hardis", version: "1.0.0" },
+            { name: "@salesforce/plugin-deploy-retrieve", version: "2.0.0" },
+          ],
+        }),
+        stderr: "",
+        exitCode: 0,
+      });
 
       await runtime.installPlugins(mockConfig, [
         "sfdx-hardis",
@@ -261,6 +260,31 @@ describe("RuntimeEnvironment", () => {
     });
 
     it("should verify plugin installation", async () => {
+      const mockedGetExecOutput = exec.getExecOutput as jest.Mock;
+      mockedGetExecOutput.mockResolvedValue({
+        stdout: JSON.stringify({
+          result: [{ name: "sfdx-hardis", version: "1.0.0" }],
+        }),
+        stderr: "",
+        exitCode: 0,
+      });
+
+      await runtime.installPlugins(mockConfig, ["sfdx-hardis"]);
+
+      expect(exec.getExecOutput).toHaveBeenCalledWith("sf", [
+        "plugins",
+        "--json",
+      ]);
+    });
+
+    it("should verify plugin installation with Array output format", async () => {
+      const mockedGetExecOutput = exec.getExecOutput as jest.Mock;
+      mockedGetExecOutput.mockResolvedValue({
+        stdout: JSON.stringify([{ name: "sfdx-hardis", version: "1.0.0" }]),
+        stderr: "",
+        exitCode: 0,
+      });
+
       await runtime.installPlugins(mockConfig, ["sfdx-hardis"]);
 
       expect(exec.getExecOutput).toHaveBeenCalledWith("sf", [
@@ -279,12 +303,30 @@ describe("RuntimeEnvironment", () => {
       );
     });
 
+    it("should throw error when plugin verification returns unexpected format", async () => {
+      // Ensure installation succeeds so we get to verification
+      mockedExec.mockResolvedValue(0);
+
+      const mockedGetExecOutput = exec.getExecOutput as jest.Mock;
+      mockedGetExecOutput.mockResolvedValueOnce({
+        stdout: JSON.stringify({ unexpected: "format" }),
+        stderr: "",
+        exitCode: 0,
+      });
+
+      await expect(
+        runtime.installPlugins(mockConfig, ["sfdx-hardis"]),
+      ).rejects.toThrow(
+        "Plugin installation failed: Unexpected output format from 'sf plugins --json'",
+      );
+    });
+
     it("should throw error on verification failure", async () => {
       // Reset the exec mock to succeed for installation but fail verification
       mockedExec.mockResolvedValue(0); // Installation succeeds
 
       const mockedGetExecOutput = exec.getExecOutput as jest.Mock;
-      mockedGetExecOutput.mockResolvedValue({
+      mockedGetExecOutput.mockResolvedValueOnce({
         stdout: JSON.stringify({
           result: [], // Plugin not found after installation
         }),
@@ -295,7 +337,7 @@ describe("RuntimeEnvironment", () => {
       await expect(
         runtime.installPlugins(mockConfig, ["sfdx-hardis"]),
       ).rejects.toThrow(
-        "Plugin 'sfdx-hardis' installation verification failed",
+        "Plugin installation failed: Plugin 'sfdx-hardis' installation verification failed",
       );
     });
 
@@ -305,7 +347,7 @@ describe("RuntimeEnvironment", () => {
       const mockedGetExecOutput = exec.getExecOutput as jest.Mock;
       mockedGetExecOutput.mockResolvedValue({
         stdout: JSON.stringify({
-          result: [{ name: "sfdx-hardis", version: "4.0.0" }],
+          result: [{ name: "sfdx-hardis", version: "6.0.0" }],
         }),
         stderr: "",
         exitCode: 0,
@@ -357,6 +399,14 @@ describe("RuntimeEnvironment", () => {
     it("should use sh shell for plugin installation on non-Windows platforms", async () => {
       // Ensure exec succeeds
       mockedExec.mockResolvedValue(0);
+      const mockedGetExecOutput = exec.getExecOutput as jest.Mock;
+      mockedGetExecOutput.mockResolvedValue({
+        stdout: JSON.stringify({
+          result: [{ name: "sfdx-hardis", version: "1.0.0" }],
+        }),
+        stderr: "",
+        exitCode: 0,
+      });
       // Force platform to linux for this test
       (runtime as any).platform = "linux";
 
