@@ -196,3 +196,59 @@ jobs:
           plugins: "@salesforce/plugin-deploy-retrieve"
           enforce_policy: "false"
           skip_auth: "true"
+
+  test-scanner-blocked:
+    name: Verify Scanner Block (Opinionated)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Action
+        run: npm run build
+
+      - name: Create Config (Scanner NOT Whitelisted)
+        run: |
+          cat <<EOF > devops-config.json
+          {
+            "governance": {
+              "enabled": true,
+              "plugin_whitelist": ["sfdx-hardis"]
+            },
+            "runtime": { "cli_version": "latest" }
+          }
+          EOF
+
+      - name: Attempt to Install Scanner (Expected to Fail)
+        id: scanner-install
+        continue-on-error: true
+        uses: ./
+        with:
+          jwt_key: "-----BEGIN RSA PRIVATE KEY-----\nMOCK\n-----END RSA PRIVATE KEY-----"
+          client_id: "mock"
+          username: "mock"
+          plugins: "@salesforce/sfdx-scanner"
+          enforce_policy: "false"
+          skip_auth: "true"
+
+      - name: Validate Scanner Blocked
+        run: |
+          echo "## 🚫 Anti-Scanner Policy Verification" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.scanner-install.outcome }}" == "failure" ]; then
+             echo "✅ **Success**: Governance blocked '@salesforce/sfdx-scanner' installation." >> $GITHUB_STEP_SUMMARY
+             echo "- Reason: Not in whitelist" >> $GITHUB_STEP_SUMMARY
+             echo "- Outcome: Blocked" >> $GITHUB_STEP_SUMMARY
+          else
+             echo "❌ **Failure**: Policy allowed installation of deprecated Scanner!" >> $GITHUB_STEP_SUMMARY
+             echo "- Outcome: ${{ steps.scanner-install.outcome }}" >> $GITHUB_STEP_SUMMARY
+             exit 1
+          fi
