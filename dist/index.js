@@ -42143,18 +42143,24 @@ async function run() {
         // 3. Identity Phase
         log.info("Authenticating with Salesforce...", "Identity");
         let orgId;
-        try {
-            const identity = new identity_1.IdentityResolver();
-            orgId = await identity.authenticate({
-                clientId: core.getInput("client_id"),
-                jwtKey: core.getInput("jwt_key"),
-                username: core.getInput("username"),
-                instanceUrl: core.getInput("instance_url"),
-            });
-            log.info(`✅ Authenticated with org ${orgId}`, "Identity");
+        if (core.getInput("skip_auth") === "true") {
+            log.warning("⚠️ Skipping authentication as requested by configuration", "Identity");
+            orgId = "00D00000000TEST"; // Dummy Org ID for testing
         }
-        catch (error) {
-            throw new IdentityError("Salesforce authentication failed", error instanceof Error ? error : undefined);
+        else {
+            try {
+                const identity = new identity_1.IdentityResolver();
+                orgId = await identity.authenticate({
+                    clientId: core.getInput("client_id"),
+                    jwtKey: core.getInput("jwt_key"),
+                    username: core.getInput("username"),
+                    instanceUrl: core.getInput("instance_url"),
+                });
+                log.info(`✅ Authenticated with org ${orgId}`, "Identity");
+            }
+            catch (error) {
+                throw new IdentityError("Salesforce authentication failed", error instanceof Error ? error : undefined);
+            }
         }
         // 4. Contract Validation Phase
         log.info("📄 Generating Deployment Contract v1.0...", "Contract");

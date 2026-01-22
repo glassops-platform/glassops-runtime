@@ -42,6 +42,11 @@ inputs:
     description: "Comma-separated list of Salesforce CLI plugins to install (e.g., 'sfdx-hardis,@salesforce/plugin-deploy-retrieve')"
     required: false
 
+  skip_auth:
+    description: "If true, skips Salesforce authentication (useful for CI/governance testing)"
+    default: "false"
+    required: false
+
 outputs:
   runtime_id:
     description: "Unique ID for this execution session"

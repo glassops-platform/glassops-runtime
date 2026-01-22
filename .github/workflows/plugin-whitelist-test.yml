@@ -53,6 +53,7 @@ jobs:
           username: "test@example.com"
           plugins: "sfdx-hardis"
           enforce_policy: "false"
+          skip_auth: "true"
 
   test-non-whitelisted-plugin:
     name: Test Non-Whitelisted Plugin Rejection
@@ -97,6 +98,7 @@ jobs:
           username: "test@example.com"
           plugins: "some-malicious-plugin"
           enforce_policy: "false"
+          skip_auth: "true"
 
       - name: Verify Plugin Was Rejected
         run: |
@@ -147,6 +149,7 @@ jobs:
           username: "test@example.com"
           plugins: "sfdx-hardis"
           enforce_policy: "false"
+          skip_auth: "true"
 
   test-version-constraints:
     name: Test Plugin Version Constraints
@@ -189,3 +192,4 @@ jobs:
           username: "test@example.com"
           plugins: "@salesforce/plugin-deploy-retrieve"
           enforce_policy: "false"
+          skip_auth: "true"
