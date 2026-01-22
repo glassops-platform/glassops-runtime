@@ -15,6 +15,10 @@ inputs:
   username:
     description: "Target Org Username"
     required: true
+  instance_url:
+    description: "Salesforce login URL (e.g., https://login.salesforce.com or https://test.salesforce.com)"
+    default: "https://login.salesforce.com"
+    required: false
 
   enforce_policy:
     description: "If true, scans devops-config.json before allowing CLI use"
@@ -28,6 +32,8 @@ outputs:
     description: "Authenticated Org ID"
   is_locked:
     description: "True if the environment is currently frozen by policy"
+  contract_path:
+    description: "Path to the generated deployment contract JSON file"
 
 runs:
   using: "node20"

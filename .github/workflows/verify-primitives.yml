@@ -14,16 +14,24 @@ on:
 
 jobs:
   unit-tests:
-    name: Run Logic Unit Tests
-    runs-on: ubuntu-latest
+    name: Run Logic Unit Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ["18", "20"]
+        exclude:
+          # Only test Node 20 on non-Linux platforms
+          - os: ubuntu-latest
+            node-version: "18"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: ${{ matrix.node-version }}
           cache: "npm"
 
       - name: Install Dependencies
@@ -31,6 +39,14 @@ jobs:
 
       - name: Run Jest Suite
         run: npm test
+
+      - name: Upload Coverage Reports
+        uses: codecov/codecov-action@v4
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '20'
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
 
   code-hygiene:
     name: Verify Code Standards
@@ -52,3 +68,16 @@ jobs:
 
       - name: Verify Build
         run: npm run build
+
+      - name: Check Dependencies
+        run: npm audit --audit-level moderate
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4

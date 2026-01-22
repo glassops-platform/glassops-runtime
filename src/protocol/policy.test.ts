@@ -6,6 +6,7 @@ import * as fs from "fs";
 jest.mock("fs", () => ({
   ...jest.requireActual("fs"),
   existsSync: jest.fn(),
+  readFileSync: jest.fn(),
 }));
 
 jest.mock("@actions/core");
@@ -13,6 +14,7 @@ jest.mock("@actions/core");
 describe("ProtocolPolicy", () => {
   let policy: ProtocolPolicy;
   const mockedExistsSync = fs.existsSync as jest.Mock;
+  const mockedReadFileSync = fs.readFileSync as jest.Mock;
 
   beforeEach(() => {
     policy = new ProtocolPolicy();
@@ -62,6 +64,54 @@ describe("ProtocolPolicy", () => {
       expect(core.warning).toHaveBeenCalledWith(
         expect.stringContaining("Using default unsafe policy"),
       );
+    });
+
+    it("should successfully load and parse valid devops-config.json", async () => {
+      const validConfig = {
+        governance: {
+          enabled: true,
+          freeze_windows: [
+            {
+              day: "Friday",
+              start: "17:00",
+              end: "23:59",
+            },
+          ],
+        },
+        runtime: {
+          cli_version: "latest",
+          node_version: "20",
+        },
+      };
+
+      mockedExistsSync.mockReturnValue(true);
+      mockedReadFileSync.mockReturnValue(JSON.stringify(validConfig));
+
+      const config = await policy.load();
+
+      expect(config.governance.enabled).toBe(true);
+      expect(config.governance.freeze_windows).toHaveLength(1);
+      expect(config.runtime.cli_version).toBe("latest");
+    });
+
+    it("should throw an error for invalid JSON in devops-config.json", async () => {
+      mockedExistsSync.mockReturnValue(true);
+      mockedReadFileSync.mockReturnValue("invalid json");
+
+      await expect(policy.load()).rejects.toThrow("Invalid Governance Policy");
+    });
+
+    it("should throw an error for invalid schema in devops-config.json", async () => {
+      const invalidConfig = {
+        governance: {
+          enabled: "not-a-boolean", // Invalid type
+        },
+      };
+
+      mockedExistsSync.mockReturnValue(true);
+      mockedReadFileSync.mockReturnValue(JSON.stringify(invalidConfig));
+
+      await expect(policy.load()).rejects.toThrow("Invalid Governance Policy");
     });
   });
 });
