@@ -1,6 +1,10 @@
 # GlassOps Runtime™
 
-![Build Status](https://github.com/glassops-platform/glassops-runtime/actions/workflows/verify-primitives.yml/badge.svg)
+[![Verify Primitives](https://github.com/glassops-platform/glassops-runtime/actions/workflows/verify-primitives.yml/badge.svg)](https://github.com/glassops-platform/glassops-runtime/actions/workflows/verify-primitives.yml)
+[![Integration Tests](https://github.com/glassops-platform/glassops-runtime/actions/workflows/integration-tests.yml/badge.svg)](https://github.com/glassops-platform/glassops-runtime/actions/workflows/integration-tests.yml)
+[![Verify Governance](https://github.com/glassops-platform/glassops-runtime/actions/workflows/verify-governance.yml/badge.svg)](https://github.com/glassops-platform/glassops-runtime/actions/workflows/verify-governance.yml)
+[![Plugin Whitelist Tests](https://github.com/glassops-platform/glassops-runtime/actions/workflows/plugin-whitelist-test.yml/badge.svg)](https://github.com/glassops-platform/glassops-runtime/actions/workflows/plugin-whitelist-test.yml)
+[![Verify Auth Contract](https://github.com/glassops-platform/glassops-runtime/actions/workflows/verify-auth-contract.yml/badge.svg)](https://github.com/glassops-platform/glassops-runtime/actions/workflows/verify-auth-contract.yml)
 
 **The governance-first execution primitive for Salesforce DevOps.**
 
@@ -35,6 +39,12 @@ GlassOps Runtime looks for a `devops-config.json` file in your repository root t
 {
   "governance": {
     "enabled": true,
+    "analyzer": {
+      "enabled": true,
+      "opinionated": true,
+      "severity_threshold": 1,
+      "rulesets": ["Security", "Performance"]
+    },
     "freeze_windows": [
       {
         "day": "Friday",
@@ -79,11 +89,20 @@ Phase 1: **Policy Phase**: Evaluates governance windows using a UTC-deterministi
 
 Phase 2: **Bootstrap Phase**: Installs the CLI version explicitly defined in your governance policy to prevent version drift.
 
-Phase 3: **Identity Phase**: Securely authenticates the session and resolves the Identity Contract.
+Phase 3: **Static Analysis (BR-003)**: (Optional) Executes `sf code-analyzer` against the codebase. Enforces quality gates by failing execution if critical violations are found, strictly rejecting deprecated `sf scanner` usage.
 
-Phase 4: **Contract Validation**: Normalizes session metadata into the machine-readable Deployment Contract v1.0.
+Phase 4: **Identity Phase**: Securely authenticates the session and resolves the Identity Contract.
 
-Phase 5: **Output Signal**: Emits the `glassops_ready` primitive to authorize downstream execution.
+Phase 5: **Contract Validation**: Normalizes session metadata into the machine-readable Deployment Contract v1.0.
+
+Phase 6: **Output Signal**: Emits the `glassops_ready` primitive to authorize downstream execution.
+
+## 📊 Traceability & Coverage
+
+GlassOps Runtime maintains strict alignment between business requirements and technical implementation.
+
+- **[Requirements Traceability Matrix (RTM)](./docs/requirements-traceability-matrix.md)**: Maps business processes (e.g., BR-003) to test scenarios.
+- **[Test Coverage Matrix (TCM)](./docs/test-coverage-matrix.md)**: Maps test scenarios to actual test files and coverage status.
 
 ## 🤝 Contributing
 

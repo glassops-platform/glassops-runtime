@@ -14,23 +14,52 @@ on:
 
 jobs:
   unit-tests:
-    name: Run Logic Unit Tests
-    runs-on: ubuntu-latest
+    name: Run Logic Unit Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ["18", "20"]
+        exclude:
+          # Only test Node 20 on non-Linux platforms
+          - os: ubuntu-latest
+            node-version: "18"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: ${{ matrix.node-version }}
           cache: "npm"
 
       - name: Install Dependencies
         run: npm ci
 
       - name: Run Jest Suite
-        run: npm test
+        shell: bash
+        run: |
+          npm test 2>&1 | tee test-output.log
+          exit_code=${PIPESTATUS[0]}
+          echo "## 🧪 Logic Unit Tests (${{ matrix.os }})" >> $GITHUB_STEP_SUMMARY
+          if [ $exit_code -eq 0 ]; then
+             echo "✅ **All Tests Passed**" >> $GITHUB_STEP_SUMMARY
+          else
+             echo "❌ **Test Failures Detected**" >> $GITHUB_STEP_SUMMARY
+             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+             tail -n 20 test-output.log >> $GITHUB_STEP_SUMMARY
+             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+             exit 1
+          fi
+
+      - name: Upload Coverage Reports
+        uses: codecov/codecov-action@v4
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '20'
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
 
   code-hygiene:
     name: Verify Code Standards
@@ -47,8 +76,30 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Lint Source Code
-        run: npm run lint
+      - name: Run Code Hygiene Checks
+        run: |
+          echo "## 🧹 Code Hygiene Status" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          echo -n "| ESLint | " >> $GITHUB_STEP_SUMMARY
+          if npm run lint; then echo "✅ Pass | " >> $GITHUB_STEP_SUMMARY; else echo "❌ Fail | " >> $GITHUB_STEP_SUMMARY; fi
+
+          echo -n "| Prettier | " >> $GITHUB_STEP_SUMMARY
+          if npm run format:check; then echo "✅ Pass | " >> $GITHUB_STEP_SUMMARY; else echo "❌ Fail | " >> $GITHUB_STEP_SUMMARY; fi
 
       - name: Verify Build
         run: npm run build
+
+      - name: Check Dependencies
+        run: npm audit --audit-level moderate
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4

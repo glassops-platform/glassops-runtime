@@ -11,14 +11,14 @@ export const DeploymentContractSchema = z.object({
   status: z.enum(["Succeeded", "Failed", "Blocked"]),
   quality: z.object({
     coverage: z.object({
-      actual: z.number(),
-      required: z.number(),
+      actual: z.number().min(0).max(100),
+      required: z.number().min(0).max(100),
       met: z.boolean(),
     }),
     tests: z.object({
-      total: z.number(),
-      passed: z.number(),
-      failed: z.number(),
+      total: z.number().min(0),
+      passed: z.number().min(0),
+      failed: z.number().min(0),
     }),
   }),
   audit: z.object({
