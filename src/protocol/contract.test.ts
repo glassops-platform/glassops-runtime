@@ -74,7 +74,7 @@ describe("DeploymentContractSchema", () => {
         schemaVersion: "1.0",
         meta: {
           adapter: "native",
-          engine: "invalid" as any, // This should fail
+          engine: "invalid" as unknown, // This should fail
           timestamp: "2024-01-21T18:00:00.000Z",
           trigger: "push",
         },
@@ -111,7 +111,7 @@ describe("DeploymentContractSchema", () => {
           timestamp: "2024-01-21T18:00:00.000Z",
           trigger: "push",
         },
-        status: "InvalidStatus" as any, // This should fail
+        status: "InvalidStatus" as unknown, // This should fail
         quality: {
           coverage: {
             actual: 85,

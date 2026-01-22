@@ -1,4 +1,4 @@
-import { ProtocolPolicy } from "./policy";
+import { ProtocolPolicy, ProtocolConfig } from "./policy";
 import * as core from "@actions/core";
 import * as fs from "fs";
 
@@ -42,7 +42,7 @@ describe("ProtocolPolicy", () => {
       const mockDate = new Date("2026-01-23T10:00:00Z");
       jest.useFakeTimers().setSystemTime(mockDate);
 
-      expect(() => policy.checkFreeze(mockConfig as any)).toThrow(/FROZEN/);
+      expect(() => policy.checkFreeze(mockConfig as ProtocolConfig)).toThrow(/FROZEN/);
     });
 
     it("should allow deployment if the current time is outside freeze windows", () => {
@@ -50,7 +50,7 @@ describe("ProtocolPolicy", () => {
       const mockDate = new Date("2026-01-23T18:00:00Z");
       jest.useFakeTimers().setSystemTime(mockDate);
 
-      expect(() => policy.checkFreeze(mockConfig as any)).not.toThrow();
+      expect(() => policy.checkFreeze(mockConfig as ProtocolConfig)).not.toThrow();
     });
   });
 

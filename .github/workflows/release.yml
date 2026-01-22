@@ -35,18 +35,11 @@ jobs:
         run: npm run build
 
       - name: Create GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          generate_release_notes: true
           body: |
-            ## Changes
-
-            This release includes the latest improvements and fixes for GlassOps Runtime.
-
-            ### Installation
+            ## Installation
 
             ```yaml
             uses: glassops-platform/glassops-runtime@${{ github.ref_name }}
