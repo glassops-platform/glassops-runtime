@@ -54,7 +54,7 @@ jobs:
           fi
 
       - name: Upload Coverage Reports
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == '20'
         with:
           file: ./coverage/lcov.info
