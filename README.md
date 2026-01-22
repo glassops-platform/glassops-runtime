@@ -39,6 +39,12 @@ GlassOps Runtime looks for a `devops-config.json` file in your repository root t
 {
   "governance": {
     "enabled": true,
+    "analyzer": {
+      "enabled": true,
+      "opinionated": true,
+      "severity_threshold": 1,
+      "rulesets": ["Security", "Performance"]
+    },
     "freeze_windows": [
       {
         "day": "Friday",
@@ -83,11 +89,13 @@ Phase 1: **Policy Phase**: Evaluates governance windows using a UTC-deterministi
 
 Phase 2: **Bootstrap Phase**: Installs the CLI version explicitly defined in your governance policy to prevent version drift.
 
-Phase 3: **Identity Phase**: Securely authenticates the session and resolves the Identity Contract.
+Phase 3: **Static Analysis (BR-003)**: (Optional) Executes `sf code-analyzer` against the codebase. Enforces quality gates by failing execution if critical violations are found, strictly rejecting deprecated `sf scanner` usage.
 
-Phase 4: **Contract Validation**: Normalizes session metadata into the machine-readable Deployment Contract v1.0.
+Phase 4: **Identity Phase**: Securely authenticates the session and resolves the Identity Contract.
 
-Phase 5: **Output Signal**: Emits the `glassops_ready` primitive to authorize downstream execution.
+Phase 5: **Contract Validation**: Normalizes session metadata into the machine-readable Deployment Contract v1.0.
+
+Phase 6: **Output Signal**: Emits the `glassops_ready` primitive to authorize downstream execution.
 
 ## 🤝 Contributing
 
