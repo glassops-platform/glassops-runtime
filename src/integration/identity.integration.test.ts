@@ -27,7 +27,14 @@ describe("Identity Integration Tests", () => {
 
     // Mock the exec function to simulate successful authentication
     mockedExec.mockImplementation(
-      async (command: string, args: string[], options: { listeners?: { stdout?: (data: Buffer) => void }; silent?: boolean }) => {
+      async (
+        command: string,
+        args: string[],
+        options: {
+          listeners?: { stdout?: (data: Buffer) => void };
+          silent?: boolean;
+        },
+      ) => {
         // Simulate stdout listener capturing JSON response
         if (options?.listeners?.stdout) {
           const mockResponse = JSON.stringify({
@@ -122,7 +129,14 @@ describe("Identity Integration Tests", () => {
 
     it("should throw error when JSON parsing fails", async () => {
       mockedExec.mockImplementation(
-        async (command: string, args: string[], options: { listeners?: { stdout?: (data: Buffer) => void }; silent?: boolean }) => {
+        async (
+          command: string,
+          args: string[],
+          options: {
+            listeners?: { stdout?: (data: Buffer) => void };
+            silent?: boolean;
+          },
+        ) => {
           if (options?.listeners?.stdout) {
             options.listeners.stdout(Buffer.from("invalid-json"));
           }
