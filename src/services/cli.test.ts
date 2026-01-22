@@ -293,6 +293,24 @@ describe("RuntimeEnvironment", () => {
       ]);
     });
 
+    it("should throw error when plugin verification returns unexpected JSON structure", async () => {
+      // Ensure installation succeeds
+      mockedExec.mockResolvedValue(0);
+
+      const mockedGetExecOutput = exec.getExecOutput as jest.Mock;
+      mockedGetExecOutput.mockResolvedValue({
+        stdout: JSON.stringify({ some: "random", json: "object" }), // Valid JSON, invalid schema
+        stderr: "",
+        exitCode: 0,
+      });
+
+      await expect(
+        runtime.installPlugins(mockConfig, ["sfdx-hardis"]),
+      ).rejects.toThrow(
+        "Plugin installation failed: Unexpected output format from 'sf plugins --json'",
+      );
+    });
+
     it("should throw error on installation failure", async () => {
       mockedExec.mockRejectedValue(new Error("Plugin installation failed"));
 

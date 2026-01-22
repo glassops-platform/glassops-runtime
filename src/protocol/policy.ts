@@ -29,6 +29,14 @@ const ConfigSchema = z.object({
       .describe(
         "List of allowed Salesforce CLI plugins with optional version constraints (e.g., ['sfdx-hardis@^4.0.0', '@salesforce/plugin-deploy-retrieve'])",
       ),
+    analyzer: z
+      .object({
+        enabled: z.boolean().default(false),
+        severity_threshold: z.number().min(1).max(3).default(1),
+        rulesets: z.array(z.string()).optional(),
+        opinionated: z.boolean().default(true), // Enforce sf code-analyzer over sf scanner
+      })
+      .optional(),
   }),
   runtime: z.object({
     cli_version: z.string().default("latest"),
