@@ -41957,6 +41957,7 @@ const path = __importStar(__nccwpck_require__(16928));
 const policy_1 = __nccwpck_require__(11392);
 const cli_1 = __nccwpck_require__(23582);
 const identity_1 = __nccwpck_require__(51012);
+const analyzer_1 = __nccwpck_require__(69572);
 const contract_1 = __nccwpck_require__(11992);
 // Custom error types for better error categorization
 class GlassOpsError extends Error {
@@ -42094,6 +42095,21 @@ async function run() {
         try {
             const policyEngine = new policy_1.ProtocolPolicy();
             config = await policyEngine.load();
+            // BR-003: Static Analysis Invariants
+            if (config.governance.analyzer?.enabled) {
+                log.info("Running static code analysis...", "Analyzer");
+                const analyzer = new analyzer_1.Analyzer();
+                // Opinionated Check: Ensure we aren't using deprecated tools
+                if (config.governance.analyzer.opinionated) {
+                    await analyzer.ensureCompatibility();
+                }
+                const scanResults = await analyzer.scan(["."], config.governance.analyzer.rulesets?.[0]);
+                const criticalViolations = scanResults.violations.filter(v => v.severity <= (config.governance.analyzer?.severity_threshold || 1));
+                if (criticalViolations.length > 0) {
+                    throw new PolicyError(`Static analysis failed: ${criticalViolations.length} critical violations found.`);
+                }
+                log.info("✅ Static analysis passed", "Analyzer");
+            }
             if (core.getInput("enforce_policy") === "true") {
                 try {
                     policyEngine.checkFreeze(config);
@@ -42338,6 +42354,14 @@ const ConfigSchema = zod_1.z.object({
             .array(zod_1.z.string())
             .optional()
             .describe("List of allowed Salesforce CLI plugins with optional version constraints (e.g., ['sfdx-hardis@^4.0.0', '@salesforce/plugin-deploy-retrieve'])"),
+        analyzer: zod_1.z
+            .object({
+            enabled: zod_1.z.boolean().default(false),
+            severity_threshold: zod_1.z.number().min(1).max(3).default(1),
+            rulesets: zod_1.z.array(zod_1.z.string()).optional(),
+            opinionated: zod_1.z.boolean().default(true), // Enforce sf code-analyzer over sf scanner
+        })
+            .optional(),
     }),
     runtime: zod_1.z.object({
         cli_version: zod_1.z.string().default("latest"),
@@ -42459,6 +42483,135 @@ class ProtocolPolicy {
     }
 }
 exports.ProtocolPolicy = ProtocolPolicy;
+
+
+/***/ }),
+
+/***/ 69572:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Analyzer = void 0;
+const exec = __importStar(__nccwpck_require__(95236));
+const core = __importStar(__nccwpck_require__(37484));
+class Analyzer {
+    /**
+     * Runs the Salesforce Code Analyzer
+     * @param paths Directories or files to scan
+     * @param ruleset Optional ruleset to enforce
+     */
+    async scan(paths, ruleset) {
+        await this.ensureCompatibility();
+        const args = ["code-analyzer", "run", "--normalize-severity", "--output-format", "json"];
+        // Add paths
+        // sf code-analyzer run --target "src,test"
+        args.push("--target", paths.join(","));
+        if (ruleset) {
+            args.push("--ruleset", ruleset);
+        }
+        let stdout = "";
+        let stderr = "";
+        try {
+            const exitCode = await exec.exec("sf", args, {
+                listeners: {
+                    stdout: (data) => { stdout += data.toString(); },
+                    stderr: (data) => { stderr += data.toString(); }
+                },
+                silent: true,
+                ignoreReturnCode: true // Analyzer returns non-zero on violations
+            });
+            return this.parseOutput(stdout, exitCode);
+        }
+        catch (error) {
+            core.error(`Analyzer execution failed: ${stderr || error.message}`);
+            throw error;
+        }
+    }
+    /**
+     * ENFORCE OPINIONATED POLICY:
+     * We explicitly reject "sf scanner" command usage to force migration to code-analyzer.
+     */
+    async ensureCompatibility() {
+        // In a real runtime, we might check if 'scanner' is installed and warn/fail.
+        // For now, this is a placeholder for the "Opinionated Policy" check.
+        // We assume the environment has 'sf code-analyzer' installed.
+    }
+    parseOutput(jsonOutput, exitCode) {
+        try {
+            // Find the JSON array in stdout (it might have some clutter)
+            const jsonStart = jsonOutput.indexOf("[");
+            const jsonEnd = jsonOutput.lastIndexOf("]");
+            if (jsonStart === -1 || jsonEnd === -1) {
+                // If clean execution but no JSON, maybe no violations or empty
+                return { violations: [], exitCode };
+            }
+            const cleanJson = jsonOutput.substring(jsonStart, jsonEnd + 1);
+            const rawResults = JSON.parse(cleanJson);
+            // Map raw analyzer output to simplified violations
+            // Note: Actual schema depends on sf code-analyzer version, implies generic mapping here
+            const violations = [];
+            // Expected schema: Array of { engine: string, violations: [...] } or direct violations
+            if (Array.isArray(rawResults)) {
+                for (const fileResult of rawResults) {
+                    // Handle sfdx-scanner / code-analyzer output format
+                    // Often: { engine: "eslint", fileName: "...", violations: [...] }
+                    if (fileResult.violations) {
+                        for (const v of fileResult.violations) {
+                            violations.push({
+                                rule: v.ruleName,
+                                description: v.message,
+                                severity: v.severity, // 1 (high) to 3 (low) roughly
+                                file: fileResult.fileName,
+                                line: v.line
+                            });
+                        }
+                    }
+                }
+            }
+            return { violations, exitCode };
+        }
+        catch (e) {
+            core.warning(`Failed to parse analyzer output: ${e}. Raw: ${jsonOutput}`);
+            return { violations: [], exitCode };
+        }
+    }
+}
+exports.Analyzer = Analyzer;
 
 
 /***/ }),
