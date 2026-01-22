@@ -7,6 +7,11 @@ updates:
       interval: "weekly"
       day: "monday"
     open-pull-requests-limit: 10
+    ignore:
+      # ESLint 9 is a breaking change (requires Flat Config migration).
+      # TODO: Dedicate a future PR to migrate config/eslint.config.json to eslint.config.js
+      - dependency-name: "eslint"
+        versions: [">= 9.0.0"]
     labels:
       - "dependencies"
       - "npm"
