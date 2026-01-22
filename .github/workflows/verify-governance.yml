@@ -77,6 +77,7 @@ jobs:
           EOF
 
       - name: Attempt Bypassed Run
+        id: test-bypass
         uses: ./
         continue-on-error: true
         with:
