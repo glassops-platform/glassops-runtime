@@ -3,6 +3,7 @@ module.exports = {
   testEnvironment: "node",
   rootDir: "../",
   testMatch: ["<rootDir>/src/**/*.test.ts"],
+  testPathIgnorePatterns: ["<rootDir>/src/integration/", ".*\\.integration\\.test\\.ts$"],
   moduleFileExtensions: ["ts", "js", "json", "node"],
   collectCoverage: true,
   coverageDirectory: "coverage",

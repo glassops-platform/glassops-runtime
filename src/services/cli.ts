@@ -28,7 +28,10 @@ export class RuntimeEnvironment {
     core.endGroup();
   }
 
-  public async installPlugins(config: ProtocolConfig, plugins: string[]): Promise<void> {
+  public async installPlugins(
+    config: ProtocolConfig,
+    plugins: string[],
+  ): Promise<void> {
     if (plugins.length === 0) {
       core.info("ℹ️ No plugins specified for installation.");
       return;
@@ -41,41 +44,61 @@ export class RuntimeEnvironment {
         core.info(`🔍 Validating plugin: ${plugin}`);
 
         // Check against whitelist if configured
-        if (!config.governance.plugin_whitelist || config.governance.plugin_whitelist.length === 0) {
-          core.warning(`⚠️ No plugin whitelist configured. Installing ${plugin} without validation.`);
-          await exec.exec("sf", ["plugins", "install", plugin]);
+        if (
+          !config.governance.plugin_whitelist ||
+          config.governance.plugin_whitelist.length === 0
+        ) {
+          core.warning(
+            `⚠️ No plugin whitelist configured. Installing ${plugin} without validation.`,
+          );
+          await exec.exec("sf", ["plugins", "install", plugin], {
+            input: Buffer.from("y\n"),
+          });
         } else {
           // Check if plugin is in whitelist
-          const policyEngine = new (await import("../protocol/policy")).ProtocolPolicy();
+          const policyEngine = new (
+            await import("../protocol/policy")
+          ).ProtocolPolicy();
           if (!policyEngine.validatePluginWhitelist(config, plugin)) {
             throw new Error(
-              `🚫 Plugin '${plugin}' is not in the whitelist. Allowed plugins: ${config.governance.plugin_whitelist.join(', ')}`
+              `🚫 Plugin '${plugin}' is not in the whitelist. Allowed plugins: ${config.governance.plugin_whitelist.join(", ")}`,
             );
           }
 
           // Get version constraint if specified
-          const versionConstraint = policyEngine.getPluginVersionConstraint(config, plugin);
+          const versionConstraint = policyEngine.getPluginVersionConstraint(
+            config,
+            plugin,
+          );
           const installCommand = versionConstraint
             ? `${plugin}@${versionConstraint}`
             : plugin;
 
           core.info(`⬇️ Installing plugin: ${installCommand}`);
-          await exec.exec("sf", ["plugins", "install", installCommand]);
+          await exec.exec("sf", ["plugins", "install", installCommand], {
+            input: Buffer.from("y\n"),
+          });
         }
 
         // Verify installation
         const result = await exec.getExecOutput("sf", ["plugins", "--json"]);
-        const installedPlugins = JSON.parse(result.stdout) as { result: Array<{ name: string; version: string }> };
-        const isInstalled = installedPlugins.result.some((p) => p.name === plugin);
+        const installedPlugins = JSON.parse(result.stdout) as {
+          result: Array<{ name: string; version: string }>;
+        };
+        const isInstalled = installedPlugins.result.some(
+          (p) => p.name === plugin,
+        );
 
         if (!isInstalled) {
-          throw new Error(`Plugin '${plugin}' installation verification failed`);
+          throw new Error(
+            `Plugin '${plugin}' installation verification failed`,
+          );
         }
 
         core.info(`✅ Plugin '${plugin}' installed and verified successfully`);
-
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         core.error(`❌ Failed to install plugin '${plugin}': ${errorMessage}`);
         throw new Error(`Plugin installation failed: ${errorMessage}`);
       }

@@ -45,7 +45,7 @@ describe("CLI Integration Tests", () => {
 
       expect(mockedWhich).toHaveBeenCalledWith("sf", false);
       expect(mockedInfo).toHaveBeenCalledWith(
-        "⚡ Salesforce CLI detected in environment. skipping install."
+        "⚡ Salesforce CLI detected in environment. skipping install.",
       );
       expect(mockedExec).not.toHaveBeenCalled();
     });
@@ -68,7 +68,7 @@ describe("CLI Integration Tests", () => {
       mockedExec.mockRejectedValue(new Error("npm install failed"));
 
       await expect(runtime.install()).rejects.toThrow(
-        "Failed to bootstrap runtime"
+        "Failed to bootstrap runtime",
       );
     });
   });
@@ -109,13 +109,13 @@ describe("CLI Integration Tests", () => {
       await runtime.installPlugins(config, ["any-plugin"]);
 
       expect(mockedWarning).toHaveBeenCalledWith(
-        "⚠️ No plugin whitelist configured. Installing any-plugin without validation."
+        "⚠️ No plugin whitelist configured. Installing any-plugin without validation.",
       );
-      expect(mockedExec).toHaveBeenCalledWith("sf", [
-        "plugins",
-        "install",
-        "any-plugin",
-      ]);
+      expect(mockedExec).toHaveBeenCalledWith(
+        "sf",
+        ["plugins", "install", "any-plugin"],
+        expect.objectContaining({ input: expect.any(Buffer) }),
+      );
     });
 
     it("should install whitelisted plugin with version constraint", async () => {
@@ -130,13 +130,13 @@ describe("CLI Integration Tests", () => {
       await runtime.installPlugins(config, ["sfdx-hardis"]);
 
       // This is the key test - verify the version constraint is applied
-      expect(mockedExec).toHaveBeenCalledWith("sf", [
-        "plugins",
-        "install",
-        "sfdx-hardis@^4.0.0",
-      ]);
+      expect(mockedExec).toHaveBeenCalledWith(
+        "sf",
+        ["plugins", "install", "sfdx-hardis@^4.0.0"],
+        expect.objectContaining({ input: expect.any(Buffer) }),
+      );
       expect(mockedInfo).toHaveBeenCalledWith(
-        "⬇️ Installing plugin: sfdx-hardis@^4.0.0"
+        "⬇️ Installing plugin: sfdx-hardis@^4.0.0",
       );
     });
 
@@ -149,13 +149,15 @@ describe("CLI Integration Tests", () => {
         runtime: { cli_version: "latest", node_version: "20" },
       };
 
-      await runtime.installPlugins(config, ["@salesforce/plugin-deploy-retrieve"]);
-
-      expect(mockedExec).toHaveBeenCalledWith("sf", [
-        "plugins",
-        "install",
-        "@salesforce/plugin-deploy-retrieve@^3.0.0",
+      await runtime.installPlugins(config, [
+        "@salesforce/plugin-deploy-retrieve",
       ]);
+
+      expect(mockedExec).toHaveBeenCalledWith(
+        "sf",
+        ["plugins", "install", "@salesforce/plugin-deploy-retrieve@^3.0.0"],
+        expect.objectContaining({ input: expect.any(Buffer) }),
+      );
     });
 
     it("should install whitelisted plugin without version constraint", async () => {
@@ -169,11 +171,11 @@ describe("CLI Integration Tests", () => {
 
       await runtime.installPlugins(config, ["sfdx-hardis"]);
 
-      expect(mockedExec).toHaveBeenCalledWith("sf", [
-        "plugins",
-        "install",
-        "sfdx-hardis",
-      ]);
+      expect(mockedExec).toHaveBeenCalledWith(
+        "sf",
+        ["plugins", "install", "sfdx-hardis"],
+        expect.objectContaining({ input: expect.any(Buffer) }),
+      );
     });
 
     it("should reject non-whitelisted plugin", async () => {
@@ -186,13 +188,13 @@ describe("CLI Integration Tests", () => {
       };
 
       await expect(
-        runtime.installPlugins(config, ["malicious-plugin"])
+        runtime.installPlugins(config, ["malicious-plugin"]),
       ).rejects.toThrow("🚫 Plugin 'malicious-plugin' is not in the whitelist");
 
       // Verify no exec call was made for the malicious plugin
       expect(mockedExec).not.toHaveBeenCalledWith(
         "sf",
-        expect.arrayContaining(["install", "malicious-plugin"])
+        expect.arrayContaining(["install", "malicious-plugin"]),
       );
     });
 
@@ -213,16 +215,16 @@ describe("CLI Integration Tests", () => {
         "@salesforce/plugin-deploy-retrieve",
       ]);
 
-      expect(mockedExec).toHaveBeenCalledWith("sf", [
-        "plugins",
-        "install",
-        "sfdx-hardis@^4.0.0",
-      ]);
-      expect(mockedExec).toHaveBeenCalledWith("sf", [
-        "plugins",
-        "install",
-        "@salesforce/plugin-deploy-retrieve@latest",
-      ]);
+      expect(mockedExec).toHaveBeenCalledWith(
+        "sf",
+        ["plugins", "install", "sfdx-hardis@^4.0.0"],
+        expect.objectContaining({ input: expect.any(Buffer) }),
+      );
+      expect(mockedExec).toHaveBeenCalledWith(
+        "sf",
+        ["plugins", "install", "@salesforce/plugin-deploy-retrieve@latest"],
+        expect.objectContaining({ input: expect.any(Buffer) }),
+      );
     });
 
     it("should skip installation when no plugins specified", async () => {
@@ -234,7 +236,7 @@ describe("CLI Integration Tests", () => {
       await runtime.installPlugins(config, []);
 
       expect(mockedInfo).toHaveBeenCalledWith(
-        "ℹ️ No plugins specified for installation."
+        "ℹ️ No plugins specified for installation.",
       );
       expect(mockedStartGroup).not.toHaveBeenCalled();
     });
@@ -272,8 +274,10 @@ describe("CLI Integration Tests", () => {
       };
 
       await expect(
-        runtime.installPlugins(config, ["sfdx-hardis"])
-      ).rejects.toThrow("Plugin 'sfdx-hardis' installation verification failed");
+        runtime.installPlugins(config, ["sfdx-hardis"]),
+      ).rejects.toThrow(
+        "Plugin 'sfdx-hardis' installation verification failed",
+      );
     });
 
     it("should handle plugin installation error", async () => {
@@ -288,11 +292,11 @@ describe("CLI Integration Tests", () => {
       };
 
       await expect(
-        runtime.installPlugins(config, ["sfdx-hardis"])
+        runtime.installPlugins(config, ["sfdx-hardis"]),
       ).rejects.toThrow("Plugin installation failed: Network error");
 
       expect(mockedError).toHaveBeenCalledWith(
-        "❌ Failed to install plugin 'sfdx-hardis': Network error"
+        "❌ Failed to install plugin 'sfdx-hardis': Network error",
       );
     });
   });
@@ -302,9 +306,7 @@ describe("CLI Integration Tests", () => {
       // Setup mocks for full workflow
       mockedGetExecOutput.mockResolvedValue({
         stdout: JSON.stringify({
-          result: [
-            { name: "sfdx-hardis", version: "4.5.0" },
-          ],
+          result: [{ name: "sfdx-hardis", version: "4.5.0" }],
         }),
         stderr: "",
         exitCode: 0,
@@ -322,23 +324,25 @@ describe("CLI Integration Tests", () => {
 
       // Verify the complete flow
       expect(mockedStartGroup).toHaveBeenCalledWith(
-        "🔌 Installing Salesforce CLI Plugins"
+        "🔌 Installing Salesforce CLI Plugins",
       );
-      expect(mockedInfo).toHaveBeenCalledWith("🔍 Validating plugin: sfdx-hardis");
       expect(mockedInfo).toHaveBeenCalledWith(
-        "⬇️ Installing plugin: sfdx-hardis@^4.0.0"
+        "🔍 Validating plugin: sfdx-hardis",
       );
-      expect(mockedExec).toHaveBeenCalledWith("sf", [
-        "plugins",
-        "install",
-        "sfdx-hardis@^4.0.0",
-      ]);
+      expect(mockedInfo).toHaveBeenCalledWith(
+        "⬇️ Installing plugin: sfdx-hardis@^4.0.0",
+      );
+      expect(mockedExec).toHaveBeenCalledWith(
+        "sf",
+        ["plugins", "install", "sfdx-hardis@^4.0.0"],
+        expect.objectContaining({ input: expect.any(Buffer) }),
+      );
       expect(mockedGetExecOutput).toHaveBeenCalledWith("sf", [
         "plugins",
         "--json",
       ]);
       expect(mockedInfo).toHaveBeenCalledWith(
-        "✅ Plugin 'sfdx-hardis' installed and verified successfully"
+        "✅ Plugin 'sfdx-hardis' installed and verified successfully",
       );
       expect(mockedEndGroup).toHaveBeenCalled();
     });
