@@ -11,7 +11,7 @@ jobs:
   verify-identity-contract:
     name: Verify Identity & Output Contract
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'glassops-platform'
+    if: github.repository_owner == 'glassops-platform' && github.actor != 'dependabot[bot]'
 
     steps:
       - name: Checkout
