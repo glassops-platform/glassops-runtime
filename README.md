@@ -97,6 +97,13 @@ Phase 5: **Contract Validation**: Normalizes session metadata into the machine-r
 
 Phase 6: **Output Signal**: Emits the `glassops_ready` primitive to authorize downstream execution.
 
+## 📊 Traceability & Coverage
+
+GlassOps Runtime maintains strict alignment between business requirements and technical implementation.
+
+- **[Requirements Traceability Matrix (RTM)](./docs/requirements-traceability-matrix.md)**: Maps business processes (e.g., BR-003) to test scenarios.
+- **[Test Coverage Matrix (TCM)](./docs/test-coverage-matrix.md)**: Maps test scenarios to actual test files and coverage status.
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on how to build, test, and submit PRs.
