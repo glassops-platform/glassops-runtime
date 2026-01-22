@@ -43,6 +43,14 @@ jobs:
 
           echo "✅ Identity Contract Verified: $ORG_ID"
 
+          # Add Step Summary
+          echo "## 🔐 Auth Contract Verification" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Org ID** | \`$ORG_ID\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Signal** | \`glassops_ready=true\` |" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Verification Passed**" >> $GITHUB_STEP_SUMMARY
+
       - name: Audit Environment Setup
         run: |
           echo "🔧 Verifying CLI Environment..."
