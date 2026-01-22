@@ -9,6 +9,7 @@
   "scripts": {
     "build": "ncc build src/index.ts -o dist --source-map --license LICENSE",
     "format": "prettier --write \"src/**/*.ts\" \"config/**/*.js\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"config/**/*.js\"",
     "lint": "eslint -c config/eslint.config.json \"src/**/*.ts\"",
     "test": "jest --config config/jest.config.js",
     "test:integration": "jest --config config/jest.integration.config.js",
