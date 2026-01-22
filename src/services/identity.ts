@@ -51,7 +51,7 @@ export class IdentityResolver {
       core.info(`✅ Authenticated as ${req.username} (${result.result.orgId})`);
 
       return result.result.orgId;
-    } catch (error) {
+    } catch {
       throw new Error("❌ Authentication Failed. Check Client ID and JWT Key.");
     } finally {
       if (fs.existsSync(keyPath)) {
