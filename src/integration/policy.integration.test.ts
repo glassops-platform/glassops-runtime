@@ -57,10 +57,11 @@ describe("Policy Integration Tests", () => {
       const config = {
         governance: {
           enabled: true,
-          freeze_windows: [
-            { day: "Saturday", start: "00:00", end: "23:59" },
+          freeze_windows: [{ day: "Saturday", start: "00:00", end: "23:59" }],
+          plugin_whitelist: [
+            "sfdx-hardis@^4.0.0",
+            "@salesforce/plugin-deploy-retrieve",
           ],
-          plugin_whitelist: ["sfdx-hardis@^4.0.0", "@salesforce/plugin-deploy-retrieve"],
         },
         runtime: {
           cli_version: "2.30.0",
@@ -134,13 +135,26 @@ describe("Policy Integration Tests", () => {
       const loadedConfig = await policy.load();
 
       // Test whitelisted plugins
-      expect(policy.validatePluginWhitelist(loadedConfig, "sfdx-hardis")).toBe(true);
-      expect(policy.validatePluginWhitelist(loadedConfig, "@salesforce/plugin-deploy-retrieve")).toBe(true);
-      expect(policy.validatePluginWhitelist(loadedConfig, "sf-metadata-scanner")).toBe(true);
+      expect(policy.validatePluginWhitelist(loadedConfig, "sfdx-hardis")).toBe(
+        true,
+      );
+      expect(
+        policy.validatePluginWhitelist(
+          loadedConfig,
+          "@salesforce/plugin-deploy-retrieve",
+        ),
+      ).toBe(true);
+      expect(
+        policy.validatePluginWhitelist(loadedConfig, "sf-metadata-scanner"),
+      ).toBe(true);
 
       // Test non-whitelisted plugins
-      expect(policy.validatePluginWhitelist(loadedConfig, "malicious-plugin")).toBe(false);
-      expect(policy.validatePluginWhitelist(loadedConfig, "unknown-plugin")).toBe(false);
+      expect(
+        policy.validatePluginWhitelist(loadedConfig, "malicious-plugin"),
+      ).toBe(false);
+      expect(
+        policy.validatePluginWhitelist(loadedConfig, "unknown-plugin"),
+      ).toBe(false);
     });
 
     it("should extract version constraints from whitelist", async () => {
@@ -161,14 +175,25 @@ describe("Policy Integration Tests", () => {
       const loadedConfig = await policy.load();
 
       // Plugins with version constraints
-      expect(policy.getPluginVersionConstraint(loadedConfig, "sfdx-hardis")).toBe("^4.0.0");
-      expect(policy.getPluginVersionConstraint(loadedConfig, "@salesforce/plugin-deploy-retrieve")).toBe("latest");
+      expect(
+        policy.getPluginVersionConstraint(loadedConfig, "sfdx-hardis"),
+      ).toBe("^4.0.0");
+      expect(
+        policy.getPluginVersionConstraint(
+          loadedConfig,
+          "@salesforce/plugin-deploy-retrieve",
+        ),
+      ).toBe("latest");
 
       // Plugin without version constraint
-      expect(policy.getPluginVersionConstraint(loadedConfig, "sf-metadata-scanner")).toBeNull();
+      expect(
+        policy.getPluginVersionConstraint(loadedConfig, "sf-metadata-scanner"),
+      ).toBeNull();
 
       // Unknown plugin
-      expect(policy.getPluginVersionConstraint(loadedConfig, "unknown")).toBeNull();
+      expect(
+        policy.getPluginVersionConstraint(loadedConfig, "unknown"),
+      ).toBeNull();
     });
 
     it("should allow all plugins when no whitelist is configured", async () => {
@@ -178,7 +203,9 @@ describe("Policy Integration Tests", () => {
       };
 
       expect(policy.validatePluginWhitelist(config, "any-plugin")).toBe(true);
-      expect(policy.getPluginVersionConstraint(config, "any-plugin")).toBeNull();
+      expect(
+        policy.getPluginVersionConstraint(config, "any-plugin"),
+      ).toBeNull();
     });
   });
 
@@ -192,7 +219,15 @@ describe("Policy Integration Tests", () => {
     it("should block deployment during configured freeze window", async () => {
       // Create a config with the current day as a freeze window
       const now = new Date();
-      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const days = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
       const currentDay = days[now.getUTCDay()];
 
       const config: ProtocolConfig = {
@@ -200,7 +235,14 @@ describe("Policy Integration Tests", () => {
           enabled: true,
           freeze_windows: [
             {
-              day: currentDay as "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday",
+              day: currentDay as
+                | "Monday"
+                | "Tuesday"
+                | "Wednesday"
+                | "Thursday"
+                | "Friday"
+                | "Saturday"
+                | "Sunday",
               start: "00:00",
               end: "23:59",
             },
@@ -215,7 +257,15 @@ describe("Policy Integration Tests", () => {
     it("should allow deployment outside freeze windows", () => {
       // Create a config with a freeze window NOT including today
       const now = new Date();
-      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const days = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
       const currentDayIndex = now.getUTCDay();
       const otherDayIndex = (currentDayIndex + 3) % 7; // Pick a different day
       const otherDay = days[otherDayIndex];
@@ -225,7 +275,14 @@ describe("Policy Integration Tests", () => {
           enabled: true,
           freeze_windows: [
             {
-              day: otherDay as "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday",
+              day: otherDay as
+                | "Monday"
+                | "Tuesday"
+                | "Wednesday"
+                | "Thursday"
+                | "Friday"
+                | "Saturday"
+                | "Sunday",
               start: "00:00",
               end: "23:59",
             },

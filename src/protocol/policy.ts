@@ -26,7 +26,9 @@ const ConfigSchema = z.object({
     plugin_whitelist: z
       .array(z.string())
       .optional()
-      .describe("List of allowed Salesforce CLI plugins with optional version constraints (e.g., ['sfdx-hardis@^4.0.0', '@salesforce/plugin-deploy-retrieve'])"),
+      .describe(
+        "List of allowed Salesforce CLI plugins with optional version constraints (e.g., ['sfdx-hardis@^4.0.0', '@salesforce/plugin-deploy-retrieve'])",
+      ),
   }),
   runtime: z.object({
     cli_version: z.string().default("latest"),
@@ -100,31 +102,45 @@ export class ProtocolPolicy {
     }
   }
 
-  public validatePluginWhitelist(config: ProtocolConfig, pluginName: string): boolean {
-    if (!config.governance.plugin_whitelist || config.governance.plugin_whitelist.length === 0) {
+  public validatePluginWhitelist(
+    config: ProtocolConfig,
+    pluginName: string,
+  ): boolean {
+    if (
+      !config.governance.plugin_whitelist ||
+      config.governance.plugin_whitelist.length === 0
+    ) {
       // If no whitelist is configured, allow all plugins (backward compatibility)
       return true;
     }
 
     // Check if plugin name matches any whitelist entry (with or without version constraints)
-    return config.governance.plugin_whitelist.some(whitelistedPlugin => {
+    return config.governance.plugin_whitelist.some((whitelistedPlugin) => {
       const extractedName = this.extractPluginName(whitelistedPlugin);
       return pluginName === extractedName;
     });
   }
 
-  public getPluginVersionConstraint(config: ProtocolConfig, pluginName: string): string | null {
-    if (!config.governance.plugin_whitelist || config.governance.plugin_whitelist.length === 0) {
+  public getPluginVersionConstraint(
+    config: ProtocolConfig,
+    pluginName: string,
+  ): string | null {
+    if (
+      !config.governance.plugin_whitelist ||
+      config.governance.plugin_whitelist.length === 0
+    ) {
       return null;
     }
 
     // Find the exact whitelist entry for this plugin
-    const whitelistEntry = config.governance.plugin_whitelist.find(whitelistedPlugin => {
-      // For scoped packages like @scope/package@version, extract @scope/package
-      // For regular packages like package@version, extract package
-      const extractedName = this.extractPluginName(whitelistedPlugin);
-      return pluginName === extractedName;
-    });
+    const whitelistEntry = config.governance.plugin_whitelist.find(
+      (whitelistedPlugin) => {
+        // For scoped packages like @scope/package@version, extract @scope/package
+        // For regular packages like package@version, extract package
+        const extractedName = this.extractPluginName(whitelistedPlugin);
+        return pluginName === extractedName;
+      },
+    );
 
     if (!whitelistEntry) {
       return null;
@@ -137,16 +153,16 @@ export class ProtocolPolicy {
   private extractPluginName(whitelistEntry: string): string {
     // Handle scoped packages: @scope/package@version -> @scope/package
     // Handle regular packages: package@version -> package
-    if (whitelistEntry.startsWith('@')) {
+    if (whitelistEntry.startsWith("@")) {
       // Scoped package: find the last @ that's not at position 0
-      const lastAtIndex = whitelistEntry.lastIndexOf('@');
+      const lastAtIndex = whitelistEntry.lastIndexOf("@");
       if (lastAtIndex > 0) {
         return whitelistEntry.substring(0, lastAtIndex);
       }
       return whitelistEntry; // No version, return as-is
     } else {
       // Regular package: split on @ and take first part
-      const atIndex = whitelistEntry.indexOf('@');
+      const atIndex = whitelistEntry.indexOf("@");
       if (atIndex > 0) {
         return whitelistEntry.substring(0, atIndex);
       }
@@ -155,16 +171,16 @@ export class ProtocolPolicy {
   }
 
   private extractVersionConstraint(whitelistEntry: string): string | null {
-    if (whitelistEntry.startsWith('@')) {
+    if (whitelistEntry.startsWith("@")) {
       // Scoped package: @scope/package@version -> version
-      const lastAtIndex = whitelistEntry.lastIndexOf('@');
+      const lastAtIndex = whitelistEntry.lastIndexOf("@");
       if (lastAtIndex > 0) {
         return whitelistEntry.substring(lastAtIndex + 1);
       }
       return null;
     } else {
       // Regular package: package@version -> version
-      const atIndex = whitelistEntry.indexOf('@');
+      const atIndex = whitelistEntry.indexOf("@");
       if (atIndex > 0) {
         return whitelistEntry.substring(atIndex + 1);
       }

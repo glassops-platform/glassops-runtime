@@ -5,7 +5,10 @@
  * with various input configurations and edge cases.
  */
 
-import { DeploymentContractSchema, DeploymentContract } from "../protocol/contract";
+import {
+  DeploymentContractSchema,
+  DeploymentContract,
+} from "../protocol/contract";
 
 describe("Contract Integration Tests", () => {
   describe("Schema Validation", () => {

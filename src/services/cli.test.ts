@@ -164,11 +164,17 @@ describe("RuntimeEnvironment", () => {
       expect(mockedInfo).toHaveBeenCalledWith(
         "⬇️ Installing plugin: sfdx-hardis",
       );
-      expect(mockedExec).toHaveBeenCalledWith(
-        "sf",
-        ["plugins", "install", "sfdx-hardis"],
-        expect.objectContaining({ input: expect.any(Buffer) }),
-      );
+      const expectedShell = process.platform === "win32" ? "cmd" : "sh";
+      const expectedFlag = process.platform === "win32" ? "/c" : "-c";
+      const expectedEchoPrefix =
+        process.platform === "win32" ? "echo y|" : "echo y | ";
+
+      expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
+        expectedFlag,
+        expect.stringContaining(
+          `${expectedEchoPrefix}sf "plugins" "install" "sfdx-hardis"`,
+        ),
+      ]);
       expect(mockedEndGroup).toHaveBeenCalled();
     });
 
@@ -206,11 +212,17 @@ describe("RuntimeEnvironment", () => {
       expect(mockedWarning).toHaveBeenCalledWith(
         "⚠️ No plugin whitelist configured. Installing any-plugin without validation.",
       );
-      expect(mockedExec).toHaveBeenCalledWith(
-        "sf",
-        ["plugins", "install", "any-plugin"],
-        expect.objectContaining({ input: expect.any(Buffer) }),
-      );
+      const expectedShell = process.platform === "win32" ? "cmd" : "sh";
+      const expectedFlag = process.platform === "win32" ? "/c" : "-c";
+      const expectedEchoPrefix =
+        process.platform === "win32" ? "echo y|" : "echo y | ";
+
+      expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
+        expectedFlag,
+        expect.stringContaining(
+          `${expectedEchoPrefix}sf "plugins" "install" "any-plugin"`,
+        ),
+      ]);
     });
 
     it("should install multiple plugins", async () => {
@@ -229,16 +241,23 @@ describe("RuntimeEnvironment", () => {
         "@salesforce/plugin-deploy-retrieve",
       ]);
 
-      expect(mockedExec).toHaveBeenCalledWith(
-        "sf",
-        ["plugins", "install", "sfdx-hardis"],
-        expect.objectContaining({ input: expect.any(Buffer) }),
-      );
-      expect(mockedExec).toHaveBeenCalledWith(
-        "sf",
-        ["plugins", "install", "@salesforce/plugin-deploy-retrieve"],
-        expect.objectContaining({ input: expect.any(Buffer) }),
-      );
+      const expectedShell = process.platform === "win32" ? "cmd" : "sh";
+      const expectedFlag = process.platform === "win32" ? "/c" : "-c";
+      const expectedEchoPrefix =
+        process.platform === "win32" ? "echo y|" : "echo y | ";
+
+      expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
+        expectedFlag,
+        expect.stringContaining(
+          `${expectedEchoPrefix}sf "plugins" "install" "sfdx-hardis"`,
+        ),
+      ]);
+      expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
+        expectedFlag,
+        expect.stringContaining(
+          `${expectedEchoPrefix}sf "plugins" "install" "@salesforce/plugin-deploy-retrieve"`,
+        ),
+      ]);
     });
 
     it("should verify plugin installation", async () => {
@@ -309,11 +328,17 @@ describe("RuntimeEnvironment", () => {
 
       // Check that the exec call was made (version constraint is applied in the real implementation)
       // The test verifies the branch is exercised - see mockedInfo calls for "Installing plugin"
-      expect(mockedExec).toHaveBeenCalledWith(
-        "sf",
-        ["plugins", "install", "sfdx-hardis@^4.0.0"],
-        expect.objectContaining({ input: expect.any(Buffer) }),
-      );
+      const expectedShell = process.platform === "win32" ? "cmd" : "sh";
+      const expectedFlag = process.platform === "win32" ? "/c" : "-c";
+      const expectedEchoPrefix =
+        process.platform === "win32" ? "echo y|" : "echo y | ";
+
+      expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
+        expectedFlag,
+        expect.stringContaining(
+          `${expectedEchoPrefix}sf "plugins" "install" "sfdx-hardis@^4.0.0"`,
+        ),
+      ]);
       expect(mockedInfo).toHaveBeenCalledWith(
         expect.stringContaining("Installing plugin:"),
       );
@@ -327,6 +352,22 @@ describe("RuntimeEnvironment", () => {
       await expect(
         runtime.installPlugins(mockConfig, ["sfdx-hardis"]),
       ).rejects.toThrow("Plugin installation failed: string error");
+    });
+
+    it("should use sh shell for plugin installation on non-Windows platforms", async () => {
+      // Ensure exec succeeds
+      mockedExec.mockResolvedValue(0);
+      // Force platform to linux for this test
+      (runtime as any).platform = "linux";
+
+      await runtime.installPlugins(mockConfig, ["sfdx-hardis"]);
+
+      expect(mockedExec).toHaveBeenCalledWith("sh", [
+        "-c",
+        expect.stringMatching(
+          /echo y \| sf.*"plugins".*"install".*"sfdx-hardis"/,
+        ),
+      ]);
     });
   });
 });

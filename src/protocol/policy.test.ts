@@ -82,7 +82,10 @@ describe("ProtocolPolicy", () => {
         runtime: { cli_version: "latest", node_version: "20" },
       };
 
-      const result = policy.validatePluginWhitelist(configWithoutWhitelist as ProtocolConfig, "any-plugin");
+      const result = policy.validatePluginWhitelist(
+        configWithoutWhitelist as ProtocolConfig,
+        "any-plugin",
+      );
       expect(result).toBe(true);
     });
 
@@ -90,12 +93,18 @@ describe("ProtocolPolicy", () => {
       const configWithWhitelist = {
         governance: {
           enabled: true,
-          plugin_whitelist: ["sfdx-hardis", "@salesforce/plugin-deploy-retrieve"],
+          plugin_whitelist: [
+            "sfdx-hardis",
+            "@salesforce/plugin-deploy-retrieve",
+          ],
         },
         runtime: { cli_version: "latest", node_version: "20" },
       };
 
-      const result = policy.validatePluginWhitelist(configWithWhitelist as ProtocolConfig, "sfdx-hardis");
+      const result = policy.validatePluginWhitelist(
+        configWithWhitelist as ProtocolConfig,
+        "sfdx-hardis",
+      );
       expect(result).toBe(true);
     });
 
@@ -103,12 +112,18 @@ describe("ProtocolPolicy", () => {
       const configWithVersionConstraint = {
         governance: {
           enabled: true,
-          plugin_whitelist: ["sfdx-hardis@^4.0.0", "@salesforce/plugin-deploy-retrieve@latest"],
+          plugin_whitelist: [
+            "sfdx-hardis@^4.0.0",
+            "@salesforce/plugin-deploy-retrieve@latest",
+          ],
         },
         runtime: { cli_version: "latest", node_version: "20" },
       };
 
-      const result = policy.validatePluginWhitelist(configWithVersionConstraint as ProtocolConfig, "sfdx-hardis");
+      const result = policy.validatePluginWhitelist(
+        configWithVersionConstraint as ProtocolConfig,
+        "sfdx-hardis",
+      );
       expect(result).toBe(true);
     });
 
@@ -116,12 +131,18 @@ describe("ProtocolPolicy", () => {
       const configWithWhitelist = {
         governance: {
           enabled: true,
-          plugin_whitelist: ["sfdx-hardis", "@salesforce/plugin-deploy-retrieve"],
+          plugin_whitelist: [
+            "sfdx-hardis",
+            "@salesforce/plugin-deploy-retrieve",
+          ],
         },
         runtime: { cli_version: "latest", node_version: "20" },
       };
 
-      const result = policy.validatePluginWhitelist(configWithWhitelist as ProtocolConfig, "malicious-plugin");
+      const result = policy.validatePluginWhitelist(
+        configWithWhitelist as ProtocolConfig,
+        "malicious-plugin",
+      );
       expect(result).toBe(false);
     });
   });
@@ -136,7 +157,10 @@ describe("ProtocolPolicy", () => {
         runtime: { cli_version: "latest", node_version: "20" },
       };
 
-      const result = policy.getPluginVersionConstraint(configWithoutWhitelist as ProtocolConfig, "any-plugin");
+      const result = policy.getPluginVersionConstraint(
+        configWithoutWhitelist as ProtocolConfig,
+        "any-plugin",
+      );
       expect(result).toBeNull();
     });
 
@@ -144,12 +168,18 @@ describe("ProtocolPolicy", () => {
       const configWithWhitelist = {
         governance: {
           enabled: true,
-          plugin_whitelist: ["sfdx-hardis", "@salesforce/plugin-deploy-retrieve"],
+          plugin_whitelist: [
+            "sfdx-hardis",
+            "@salesforce/plugin-deploy-retrieve",
+          ],
         },
         runtime: { cli_version: "latest", node_version: "20" },
       };
 
-      const result = policy.getPluginVersionConstraint(configWithWhitelist as ProtocolConfig, "unknown-plugin");
+      const result = policy.getPluginVersionConstraint(
+        configWithWhitelist as ProtocolConfig,
+        "unknown-plugin",
+      );
       expect(result).toBeNull();
     });
 
@@ -157,12 +187,18 @@ describe("ProtocolPolicy", () => {
       const configWithVersionConstraint = {
         governance: {
           enabled: true,
-          plugin_whitelist: ["sfdx-hardis@^4.0.0", "@salesforce/plugin-deploy-retrieve@latest"],
+          plugin_whitelist: [
+            "sfdx-hardis@^4.0.0",
+            "@salesforce/plugin-deploy-retrieve@latest",
+          ],
         },
         runtime: { cli_version: "latest", node_version: "20" },
       };
 
-      const result = policy.getPluginVersionConstraint(configWithVersionConstraint as ProtocolConfig, "sfdx-hardis");
+      const result = policy.getPluginVersionConstraint(
+        configWithVersionConstraint as ProtocolConfig,
+        "sfdx-hardis",
+      );
       expect(result).toBe("^4.0.0");
     });
 
@@ -170,12 +206,18 @@ describe("ProtocolPolicy", () => {
       const configMixedConstraints = {
         governance: {
           enabled: true,
-          plugin_whitelist: ["sfdx-hardis", "@salesforce/plugin-deploy-retrieve@latest"],
+          plugin_whitelist: [
+            "sfdx-hardis",
+            "@salesforce/plugin-deploy-retrieve@latest",
+          ],
         },
         runtime: { cli_version: "latest", node_version: "20" },
       };
 
-      const result = policy.getPluginVersionConstraint(configMixedConstraints as ProtocolConfig, "sfdx-hardis");
+      const result = policy.getPluginVersionConstraint(
+        configMixedConstraints as ProtocolConfig,
+        "sfdx-hardis",
+      );
       expect(result).toBeNull();
     });
 
@@ -188,7 +230,10 @@ describe("ProtocolPolicy", () => {
         runtime: { cli_version: "latest", node_version: "20" },
       };
 
-      const result = policy.getPluginVersionConstraint(configScopedPackage as ProtocolConfig, "@salesforce/plugin-deploy-retrieve");
+      const result = policy.getPluginVersionConstraint(
+        configScopedPackage as ProtocolConfig,
+        "@salesforce/plugin-deploy-retrieve",
+      );
       expect(result).toBe("^1.0.0");
     });
 
@@ -201,7 +246,10 @@ describe("ProtocolPolicy", () => {
         runtime: { cli_version: "latest", node_version: "20" },
       };
 
-      const result = policy.getPluginVersionConstraint(configScopedNoVersion as ProtocolConfig, "@salesforce/plugin-deploy-retrieve");
+      const result = policy.getPluginVersionConstraint(
+        configScopedNoVersion as ProtocolConfig,
+        "@salesforce/plugin-deploy-retrieve",
+      );
       expect(result).toBeNull();
     });
   });

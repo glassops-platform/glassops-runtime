@@ -4,6 +4,8 @@ import * as io from "@actions/io";
 import { ProtocolConfig } from "../protocol/policy";
 
 export class RuntimeEnvironment {
+  protected platform = process.platform;
+
   public async install(version: string = "latest"): Promise<void> {
     core.startGroup("🔧 Bootstrapping GlassOps Runtime");
 
@@ -51,9 +53,7 @@ export class RuntimeEnvironment {
           core.warning(
             `⚠️ No plugin whitelist configured. Installing ${plugin} without validation.`,
           );
-          await exec.exec("sf", ["plugins", "install", plugin], {
-            input: Buffer.from("y\n"),
-          });
+          await this.execWithAutoConfirm("sf", ["plugins", "install", plugin]);
         } else {
           // Check if plugin is in whitelist
           const policyEngine = new (
@@ -75,9 +75,11 @@ export class RuntimeEnvironment {
             : plugin;
 
           core.info(`⬇️ Installing plugin: ${installCommand}`);
-          await exec.exec("sf", ["plugins", "install", installCommand], {
-            input: Buffer.from("y\n"),
-          });
+          await this.execWithAutoConfirm("sf", [
+            "plugins",
+            "install",
+            installCommand,
+          ]);
         }
 
         // Verify installation
@@ -105,5 +107,18 @@ export class RuntimeEnvironment {
     }
 
     core.endGroup();
+  }
+
+  private async execWithAutoConfirm(
+    command: string,
+    args: string[],
+  ): Promise<void> {
+    const joinedArgs = args.map((arg) => `"${arg}"`).join(" ");
+    const fullCommand = `${command} ${joinedArgs}`;
+    if (this.platform === "win32") {
+      await exec.exec("cmd", ["/c", `echo y|${fullCommand}`]);
+    } else {
+      await exec.exec("sh", ["-c", `echo y | ${fullCommand}`]);
+    }
   }
 }

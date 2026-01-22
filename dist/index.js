@@ -41996,27 +41996,27 @@ async function run() {
     // ============================================
     // 1. Environment Context Validation
     const requiredEnvVars = [
-        'GITHUB_WORKSPACE',
-        'GITHUB_ACTOR',
-        'GITHUB_REPOSITORY'
+        "GITHUB_WORKSPACE",
+        "GITHUB_ACTOR",
+        "GITHUB_REPOSITORY",
     ];
-    const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+    const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
     if (missingEnvVars.length > 0) {
-        throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
+        throw new Error(`Missing required environment variables: ${missingEnvVars.join(", ")}`);
     }
     // 2. Input Validation & Sanitization
-    const requiredInputs = ['client_id', 'jwt_key', 'username'];
-    const missingInputs = requiredInputs.filter(input => !core.getInput(input));
+    const requiredInputs = ["client_id", "jwt_key", "username"];
+    const missingInputs = requiredInputs.filter((input) => !core.getInput(input));
     if (missingInputs.length > 0) {
-        throw new Error(`Missing required inputs: ${missingInputs.join(', ')}`);
+        throw new Error(`Missing required inputs: ${missingInputs.join(", ")}`);
     }
     // Validate JWT key format (basic check)
-    const jwtKey = core.getInput('jwt_key');
-    if (!jwtKey.includes('BEGIN') || !jwtKey.includes('END')) {
-        throw new Error('Invalid JWT key format - must contain BEGIN and END markers');
+    const jwtKey = core.getInput("jwt_key");
+    if (!jwtKey.includes("BEGIN") || !jwtKey.includes("END")) {
+        throw new Error("Invalid JWT key format - must contain BEGIN and END markers");
     }
     // Validate Salesforce instance URL
-    const instanceUrl = core.getInput('instance_url') || 'https://login.salesforce.com';
+    const instanceUrl = core.getInput("instance_url") || "https://login.salesforce.com";
     try {
         new URL(instanceUrl);
     }
@@ -42029,24 +42029,29 @@ async function run() {
     const maxExecutionTime = 30 * 60 * 1000; // 30 minutes max
     const startTime = Date.now();
     // Safety check for execution time
-    setTimeout(() => {
+    // Safety check for execution time
+    const safetyTimeout = setTimeout(() => {
         if (Date.now() - startTime > maxExecutionTime) {
-            core.error('Execution timeout exceeded - terminating session');
+            core.error("Execution timeout exceeded - terminating session");
             process.exit(1);
         }
     }, maxExecutionTime);
+    // Ensure the timeout doesn't prevent the process from exiting
+    safetyTimeout.unref();
     // 5. Data Integrity & Compliance Checks
     // Validate GitHub context for security
-    if (process.env.GITHUB_EVENT_NAME === 'pull_request' && !process.env.GITHUB_HEAD_REF) {
-        throw new Error('Invalid pull request context - missing GITHUB_HEAD_REF');
+    if (process.env.GITHUB_EVENT_NAME === "pull_request" &&
+        !process.env.GITHUB_HEAD_REF) {
+        throw new Error("Invalid pull request context - missing GITHUB_HEAD_REF");
     }
     // Basic compliance check - ensure we're not running in forked repositories without proper context
-    if (process.env.GITHUB_EVENT_NAME === 'pull_request' && process.env.GITHUB_HEAD_REF?.includes(':')) {
-        core.warning('⚠️ Running on forked repository - additional security validations recommended');
+    if (process.env.GITHUB_EVENT_NAME === "pull_request" &&
+        process.env.GITHUB_HEAD_REF?.includes(":")) {
+        core.warning("⚠️ Running on forked repository - additional security validations recommended");
     }
     // Validate repository format
     const repoPattern = /^[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+$/;
-    if (!repoPattern.test(process.env.GITHUB_REPOSITORY || '')) {
+    if (!repoPattern.test(process.env.GITHUB_REPOSITORY || "")) {
         throw new Error(`Invalid repository format: ${process.env.GITHUB_REPOSITORY}`);
     }
     // Generate unique runtime ID for this execution session
@@ -42097,7 +42102,9 @@ async function run() {
                 }
                 catch (freezeError) {
                     core.setOutput("is_locked", "true");
-                    throw new PolicyError(freezeError instanceof Error ? freezeError.message : "Freeze window violation", freezeError instanceof Error ? freezeError : undefined);
+                    throw new PolicyError(freezeError instanceof Error
+                        ? freezeError.message
+                        : "Freeze window violation", freezeError instanceof Error ? freezeError : undefined);
                 }
             }
             else {
@@ -42119,9 +42126,12 @@ async function run() {
             // Install plugins if specified
             const pluginsInput = core.getInput("plugins");
             if (pluginsInput) {
-                const plugins = pluginsInput.split(',').map(p => p.trim()).filter(p => p.length > 0);
+                const plugins = pluginsInput
+                    .split(",")
+                    .map((p) => p.trim())
+                    .filter((p) => p.length > 0);
                 if (plugins.length > 0) {
-                    log.info(`Installing ${plugins.length} plugin(s): ${plugins.join(', ')}`, "Bootstrap");
+                    log.info(`Installing ${plugins.length} plugin(s): ${plugins.join(", ")}`, "Bootstrap");
                     await runtime.installPlugins(config, plugins);
                     log.info("✅ All plugins installed successfully", "Bootstrap");
                 }
@@ -42371,22 +42381,24 @@ class ProtocolPolicy {
         }
     }
     validatePluginWhitelist(config, pluginName) {
-        if (!config.governance.plugin_whitelist || config.governance.plugin_whitelist.length === 0) {
+        if (!config.governance.plugin_whitelist ||
+            config.governance.plugin_whitelist.length === 0) {
             // If no whitelist is configured, allow all plugins (backward compatibility)
             return true;
         }
         // Check if plugin name matches any whitelist entry (with or without version constraints)
-        return config.governance.plugin_whitelist.some(whitelistedPlugin => {
+        return config.governance.plugin_whitelist.some((whitelistedPlugin) => {
             const extractedName = this.extractPluginName(whitelistedPlugin);
             return pluginName === extractedName;
         });
     }
     getPluginVersionConstraint(config, pluginName) {
-        if (!config.governance.plugin_whitelist || config.governance.plugin_whitelist.length === 0) {
+        if (!config.governance.plugin_whitelist ||
+            config.governance.plugin_whitelist.length === 0) {
             return null;
         }
         // Find the exact whitelist entry for this plugin
-        const whitelistEntry = config.governance.plugin_whitelist.find(whitelistedPlugin => {
+        const whitelistEntry = config.governance.plugin_whitelist.find((whitelistedPlugin) => {
             // For scoped packages like @scope/package@version, extract @scope/package
             // For regular packages like package@version, extract package
             const extractedName = this.extractPluginName(whitelistedPlugin);
@@ -42401,9 +42413,9 @@ class ProtocolPolicy {
     extractPluginName(whitelistEntry) {
         // Handle scoped packages: @scope/package@version -> @scope/package
         // Handle regular packages: package@version -> package
-        if (whitelistEntry.startsWith('@')) {
+        if (whitelistEntry.startsWith("@")) {
             // Scoped package: find the last @ that's not at position 0
-            const lastAtIndex = whitelistEntry.lastIndexOf('@');
+            const lastAtIndex = whitelistEntry.lastIndexOf("@");
             if (lastAtIndex > 0) {
                 return whitelistEntry.substring(0, lastAtIndex);
             }
@@ -42411,7 +42423,7 @@ class ProtocolPolicy {
         }
         else {
             // Regular package: split on @ and take first part
-            const atIndex = whitelistEntry.indexOf('@');
+            const atIndex = whitelistEntry.indexOf("@");
             if (atIndex > 0) {
                 return whitelistEntry.substring(0, atIndex);
             }
@@ -42419,9 +42431,9 @@ class ProtocolPolicy {
         }
     }
     extractVersionConstraint(whitelistEntry) {
-        if (whitelistEntry.startsWith('@')) {
+        if (whitelistEntry.startsWith("@")) {
             // Scoped package: @scope/package@version -> version
-            const lastAtIndex = whitelistEntry.lastIndexOf('@');
+            const lastAtIndex = whitelistEntry.lastIndexOf("@");
             if (lastAtIndex > 0) {
                 return whitelistEntry.substring(lastAtIndex + 1);
             }
@@ -42429,7 +42441,7 @@ class ProtocolPolicy {
         }
         else {
             // Regular package: package@version -> version
-            const atIndex = whitelistEntry.indexOf('@');
+            const atIndex = whitelistEntry.indexOf("@");
             if (atIndex > 0) {
                 return whitelistEntry.substring(atIndex + 1);
             }
@@ -42486,6 +42498,9 @@ const core = __importStar(__nccwpck_require__(37484));
 const exec = __importStar(__nccwpck_require__(95236));
 const io = __importStar(__nccwpck_require__(94994));
 class RuntimeEnvironment {
+    constructor() {
+        this.platform = process.platform;
+    }
     async install(version = "latest") {
         core.startGroup("🔧 Bootstrapping GlassOps Runtime");
         const isInstalled = await io.which("sf", false);
@@ -42514,15 +42529,16 @@ class RuntimeEnvironment {
             try {
                 core.info(`🔍 Validating plugin: ${plugin}`);
                 // Check against whitelist if configured
-                if (!config.governance.plugin_whitelist || config.governance.plugin_whitelist.length === 0) {
+                if (!config.governance.plugin_whitelist ||
+                    config.governance.plugin_whitelist.length === 0) {
                     core.warning(`⚠️ No plugin whitelist configured. Installing ${plugin} without validation.`);
-                    await exec.exec("sf", ["plugins", "install", plugin]);
+                    await this.execWithAutoConfirm("sf", ["plugins", "install", plugin]);
                 }
                 else {
                     // Check if plugin is in whitelist
                     const policyEngine = new (await Promise.resolve().then(() => __importStar(__nccwpck_require__(11392)))).ProtocolPolicy();
                     if (!policyEngine.validatePluginWhitelist(config, plugin)) {
-                        throw new Error(`🚫 Plugin '${plugin}' is not in the whitelist. Allowed plugins: ${config.governance.plugin_whitelist.join(', ')}`);
+                        throw new Error(`🚫 Plugin '${plugin}' is not in the whitelist. Allowed plugins: ${config.governance.plugin_whitelist.join(", ")}`);
                     }
                     // Get version constraint if specified
                     const versionConstraint = policyEngine.getPluginVersionConstraint(config, plugin);
@@ -42530,7 +42546,11 @@ class RuntimeEnvironment {
                         ? `${plugin}@${versionConstraint}`
                         : plugin;
                     core.info(`⬇️ Installing plugin: ${installCommand}`);
-                    await exec.exec("sf", ["plugins", "install", installCommand]);
+                    await this.execWithAutoConfirm("sf", [
+                        "plugins",
+                        "install",
+                        installCommand,
+                    ]);
                 }
                 // Verify installation
                 const result = await exec.getExecOutput("sf", ["plugins", "--json"]);
@@ -42548,6 +42568,16 @@ class RuntimeEnvironment {
             }
         }
         core.endGroup();
+    }
+    async execWithAutoConfirm(command, args) {
+        const joinedArgs = args.map((arg) => `"${arg}"`).join(" ");
+        const fullCommand = `${command} ${joinedArgs}`;
+        if (this.platform === "win32") {
+            await exec.exec("cmd", ["/c", `echo y|${fullCommand}`]);
+        }
+        else {
+            await exec.exec("sh", ["-c", `echo y | ${fullCommand}`]);
+        }
     }
 }
 exports.RuntimeEnvironment = RuntimeEnvironment;

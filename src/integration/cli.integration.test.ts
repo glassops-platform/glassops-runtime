@@ -111,11 +111,17 @@ describe("CLI Integration Tests", () => {
       expect(mockedWarning).toHaveBeenCalledWith(
         "⚠️ No plugin whitelist configured. Installing any-plugin without validation.",
       );
-      expect(mockedExec).toHaveBeenCalledWith(
-        "sf",
-        ["plugins", "install", "any-plugin"],
-        expect.objectContaining({ input: expect.any(Buffer) }),
-      );
+      const expectedShell = process.platform === "win32" ? "cmd" : "sh";
+      const expectedFlag = process.platform === "win32" ? "/c" : "-c";
+      const expectedEchoPrefix =
+        process.platform === "win32" ? "echo y|" : "echo y | ";
+
+      expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
+        expectedFlag,
+        expect.stringContaining(
+          `${expectedEchoPrefix}sf "plugins" "install" "any-plugin"`,
+        ),
+      ]);
     });
 
     it("should install whitelisted plugin with version constraint", async () => {
@@ -130,11 +136,17 @@ describe("CLI Integration Tests", () => {
       await runtime.installPlugins(config, ["sfdx-hardis"]);
 
       // This is the key test - verify the version constraint is applied
-      expect(mockedExec).toHaveBeenCalledWith(
-        "sf",
-        ["plugins", "install", "sfdx-hardis@^4.0.0"],
-        expect.objectContaining({ input: expect.any(Buffer) }),
-      );
+      const expectedShell = process.platform === "win32" ? "cmd" : "sh";
+      const expectedFlag = process.platform === "win32" ? "/c" : "-c";
+      const expectedEchoPrefix =
+        process.platform === "win32" ? "echo y|" : "echo y | ";
+
+      expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
+        expectedFlag,
+        expect.stringContaining(
+          `${expectedEchoPrefix}sf "plugins" "install" "sfdx-hardis@^4.0.0"`,
+        ),
+      ]);
       expect(mockedInfo).toHaveBeenCalledWith(
         "⬇️ Installing plugin: sfdx-hardis@^4.0.0",
       );
@@ -153,11 +165,17 @@ describe("CLI Integration Tests", () => {
         "@salesforce/plugin-deploy-retrieve",
       ]);
 
-      expect(mockedExec).toHaveBeenCalledWith(
-        "sf",
-        ["plugins", "install", "@salesforce/plugin-deploy-retrieve@^3.0.0"],
-        expect.objectContaining({ input: expect.any(Buffer) }),
-      );
+      const expectedShell = process.platform === "win32" ? "cmd" : "sh";
+      const expectedFlag = process.platform === "win32" ? "/c" : "-c";
+      const expectedEchoPrefix =
+        process.platform === "win32" ? "echo y|" : "echo y | ";
+
+      expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
+        expectedFlag,
+        expect.stringContaining(
+          `${expectedEchoPrefix}sf "plugins" "install" "@salesforce/plugin-deploy-retrieve@^3.0.0"`,
+        ),
+      ]);
     });
 
     it("should install whitelisted plugin without version constraint", async () => {
@@ -171,11 +189,17 @@ describe("CLI Integration Tests", () => {
 
       await runtime.installPlugins(config, ["sfdx-hardis"]);
 
-      expect(mockedExec).toHaveBeenCalledWith(
-        "sf",
-        ["plugins", "install", "sfdx-hardis"],
-        expect.objectContaining({ input: expect.any(Buffer) }),
-      );
+      const expectedShell = process.platform === "win32" ? "cmd" : "sh";
+      const expectedFlag = process.platform === "win32" ? "/c" : "-c";
+      const expectedEchoPrefix =
+        process.platform === "win32" ? "echo y|" : "echo y | ";
+
+      expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
+        expectedFlag,
+        expect.stringContaining(
+          `${expectedEchoPrefix}sf "plugins" "install" "sfdx-hardis"`,
+        ),
+      ]);
     });
 
     it("should reject non-whitelisted plugin", async () => {
@@ -215,16 +239,23 @@ describe("CLI Integration Tests", () => {
         "@salesforce/plugin-deploy-retrieve",
       ]);
 
-      expect(mockedExec).toHaveBeenCalledWith(
-        "sf",
-        ["plugins", "install", "sfdx-hardis@^4.0.0"],
-        expect.objectContaining({ input: expect.any(Buffer) }),
-      );
-      expect(mockedExec).toHaveBeenCalledWith(
-        "sf",
-        ["plugins", "install", "@salesforce/plugin-deploy-retrieve@latest"],
-        expect.objectContaining({ input: expect.any(Buffer) }),
-      );
+      const expectedShell = process.platform === "win32" ? "cmd" : "sh";
+      const expectedFlag = process.platform === "win32" ? "/c" : "-c";
+      const expectedEchoPrefix =
+        process.platform === "win32" ? "echo y|" : "echo y | ";
+
+      expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
+        expectedFlag,
+        expect.stringContaining(
+          `${expectedEchoPrefix}sf "plugins" "install" "sfdx-hardis@^4.0.0"`,
+        ),
+      ]);
+      expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
+        expectedFlag,
+        expect.stringContaining(
+          `${expectedEchoPrefix}sf "plugins" "install" "@salesforce/plugin-deploy-retrieve@latest"`,
+        ),
+      ]);
     });
 
     it("should skip installation when no plugins specified", async () => {
@@ -332,11 +363,17 @@ describe("CLI Integration Tests", () => {
       expect(mockedInfo).toHaveBeenCalledWith(
         "⬇️ Installing plugin: sfdx-hardis@^4.0.0",
       );
-      expect(mockedExec).toHaveBeenCalledWith(
-        "sf",
-        ["plugins", "install", "sfdx-hardis@^4.0.0"],
-        expect.objectContaining({ input: expect.any(Buffer) }),
-      );
+      const expectedShell = process.platform === "win32" ? "cmd" : "sh";
+      const expectedFlag = process.platform === "win32" ? "/c" : "-c";
+      const expectedEchoPrefix =
+        process.platform === "win32" ? "echo y|" : "echo y | ";
+
+      expect(mockedExec).toHaveBeenCalledWith(expectedShell, [
+        expectedFlag,
+        expect.stringContaining(
+          `${expectedEchoPrefix}sf "plugins" "install" "sfdx-hardis@^4.0.0"`,
+        ),
+      ]);
       expect(mockedGetExecOutput).toHaveBeenCalledWith("sf", [
         "plugins",
         "--json",
