@@ -33,7 +33,7 @@
     "@actions/core": "^2.0.2",
     "@actions/exec": "^2.0.0",
     "@actions/io": "^2.0.0",
-    "zod": "^4.3.5"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
