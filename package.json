@@ -30,7 +30,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@actions/cache": "^5.0.3",
-    "@actions/core": "^2.0.2",
+    "@actions/core": "^3.0.0",
     "@actions/exec": "^2.0.0",
     "@actions/io": "^2.0.0",
     "zod": "^4.3.5"
