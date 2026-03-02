@@ -51,7 +51,7 @@ jobs:
           GITHUB_RUN_ID: ${{ github.run_id }}
 
       - name: Upload Integration Test Coverage
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: integration-coverage-report
