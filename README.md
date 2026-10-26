@@ -1,5 +1,7 @@
 # GlassOps Runtime™
 
+> **This repository is archived.** I no longer develop this TypeScript runtime. GlassOps continues in [glassops-platform/glassops](https://github.com/glassops-platform/glassops).
+
 [![Verify Primitives](https://github.com/glassops-platform/glassops-runtime/actions/workflows/verify-primitives.yml/badge.svg)](https://github.com/glassops-platform/glassops-runtime/actions/workflows/verify-primitives.yml)
 [![Integration Tests](https://github.com/glassops-platform/glassops-runtime/actions/workflows/integration-tests.yml/badge.svg)](https://github.com/glassops-platform/glassops-runtime/actions/workflows/integration-tests.yml)
 [![Verify Governance](https://github.com/glassops-platform/glassops-runtime/actions/workflows/verify-governance.yml/badge.svg)](https://github.com/glassops-platform/glassops-runtime/actions/workflows/verify-governance.yml)
